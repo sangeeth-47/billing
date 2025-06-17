@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workshop Billing System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    body {
+      background-color: #f1f2f7;
+      color: #333;
+    }
+
+    header {
+      background-color: #2d2d99;
+      color: white;
+      padding: 1rem 2rem;
+      text-align: center;
+      font-size: 1.5rem;
+    }
+
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+    }
+
+    nav button {
+      background-color: #2d2d99;
+      color: white;
+      border: none;
+      padding: 0.7rem 1.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .section {
+      display: none;
+      padding: 2rem;
+    }
+
+    .active {
+      display: block;
+    }
+
+    .billing-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .billing-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .billing-table th,
+    .billing-table td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .billing-table input[type="number"] {
+      text-align: right;
+    }
+
+    .billing-table input[type="text"] {
+      width: 100%;
+    }
+
+    .billing-table td input:nth-child(2),
+    .billing-table td input:nth-child(3) {
+      width: 60px;
+    }
+
+    .billing-table td input:nth-child(4) {
+      width: 90px;
+    }
+
+    .add-row-btn,
+    .print-btn {
+      padding: 0.7rem 1.2rem;
+      border: none;
+      background-color: #2d2d99;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .delete-btn {
+      background: #d9534f;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .signature {
+      margin-top: 3rem;
+      text-align: right;
+      font-style: italic;
+    }
+
+    .totals,
+    .grand-total {
+      font-weight: bold;
+      margin-top: 1rem;
+      text-align: right;
+    }
+
+    .dashboard,
+    .inventory,
+    .reports {
+      background-color: #fff;
+      padding: 2rem;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+
+    .customer-address textarea {
+      width: 100%;
+      height: 80px;
+    }
+
+    .customer-address p {
+      margin: 0;
+      white-space: pre-wrap;
+    }
+
+    .bill-info {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 0.5rem 1rem;
+      align-self: flex-end;
+      margin-top: 1rem;
+      max-width: 400px;
+    }
+
+    .bill-info label {
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .bill-info input {
+      padding: 5px;
+      width: 100%;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+
+      #billing, #billing * {
+        visibility: visible;
+      }
+
+      #billing {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      nav, .add-row-btn, .print-btn, th:last-child, td:last-child, textarea, input[type="text"], input[type="number"], input[type="date"] {
+        display: none !important;
+      }
+
+      .billing-table input[readonly],
+      .billing-table td input[readonly] {
+        display: inline !important;
+        visibility: visible !important;
+        border: none;
+      }
+
+      .customer-address p,
+      .bill-info {
+        display: block !important;
+        visibility: visible !important;
+        position: relative;
+      }
+
+      .bill-info input {
+        display: inline !important;
+        visibility: visible !important;
+        border: none;
+        width: auto;
+      }
+
+      .bill-info input::before {
+        content: attr(value);
+        visibility: visible;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>Workshop Billing System</header>
+
+  <nav>
+    <!-- <button onclick="showSection('dashboard')">Dashboard</button> -->
+    <button onclick="showSection('billing')">Billing</button>
+     <!-- <button onclick="showSection('inventory')">Inventory</button>
+    <button onclick="showSection('reports')">Reports</button> -->
+  </nav>
+
+  <section id="dashboard" class="section active dashboard">
+    <h2>Monthly Trends</h2>
+    <p>Display graph or stats from API here</p>
+  </section>
+
+  <section id="billing" class="section">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: flex-start;">
+      <div class="customer-address" style="flex: 1; max-width: 30%;">
+        <label for="custAddr">Customer Address:</label>
+        <textarea id="custAddr" oninput="document.getElementById('custAddrText').textContent = this.value"></textarea>
+        <p id="custAddrText" style="display:none;"></p>
+      </div>
+      <div style="text-align: center; flex: 1; max-width: 40%;">
+        <h2>RE BORN Motorcycle</h2>
+        <p>Kannur - Mattannur Rd<br>Kannur, Kerala 670594</p>
+      </div>
+      <div class="bill-info" style="text-align: left; flex: 1; max-width: 30%;">
+        <label>Bill No: <input type="text" id="billNo"></label>
+        <label>Date: <input type="date" id="date"></label>
+        <label>Vehicle No: <input type="text" id="vehicleNo"></label>
+        <label>KM Covered: <input type="number" id="kmCovered"></label>
+      </div>
+    </div>
+
+    <div class="billing-container">
+      <h2>Consumables</h2>
+      <table class="billing-table" id="consumablesTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Item</th>
+            <th>Qty</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="totals">Subtotal: ₹ <span id="consumableSubtotal">0.00</span></div>
+      <button class="add-row-btn" onclick="addRow('consumablesTable')">+ Add Consumable</button>
+
+      <h2>Services</h2>
+      <table class="billing-table" id="servicesTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Service</th>
+            <th>Charge</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="totals">Subtotal: ₹ <span id="serviceSubtotal">0.00</span></div>
+      <div class="grand-total">Grand Total: ₹ <span id="grandTotal">0.00</span></div>
+      <button class="add-row-btn" onclick="addServiceRow('servicesTable')">+ Add Service</button>
+      <button class="print-btn" onclick="window.print()">Print PDF</button>
+      <div class="signature">Sign: ___________________________</div>
+    </div>
+  </section>
+
+  <section id="inventory" class="section inventory">
+    <h2>Add Inventory</h2>
+    <p>Form to add new stock items and prices</p>
+  </section>
+
+  <section id="reports" class="section reports">
+    <h2>Generate Report</h2>
+    <p>Report of current inventory and pricing</p>
+  </section>
+
+  <script>
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function formatCurrency(num) {
+      return parseFloat(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function calculateTotals() {
+      let consumableSubtotal = 0;
+      document.querySelectorAll('#consumablesTable tbody tr').forEach((row, i) => {
+        row.children[0].textContent = i + 1;
+        const qty = parseFloat(row.children[2].children[0].value) || 0;
+        const price = parseFloat(row.children[3].children[0].value) || 0;
+        const total = qty * price;
+        row.children[4].children[0].value = total.toFixed(2);
+        consumableSubtotal += total;
+      });
+      document.getElementById('consumableSubtotal').textContent = formatCurrency(consumableSubtotal);
+
+      let serviceSubtotal = 0;
+      document.querySelectorAll('#servicesTable tbody tr').forEach((row, i) => {
+        row.children[0].textContent = i + 1;
+        const charge = parseFloat(row.children[2].children[0].value) || 0;
+        serviceSubtotal += charge;
+      });
+      document.getElementById('serviceSubtotal').textContent = formatCurrency(serviceSubtotal);
+
+      document.getElementById('grandTotal').textContent = formatCurrency(consumableSubtotal + serviceSubtotal);
+    }
+
+    function addRow(tableId) {
+      const tbody = document.getElementById(tableId).querySelector("tbody");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td></td>
+        <td><input type="text" oninput="calculateTotals()"></td>
+        <td><input type="number" oninput="calculateTotals()"></td>
+        <td><input type="number" oninput="calculateTotals()"></td>
+        <td><input type="number" readonly></td>
+        <td><button class="delete-btn" onclick="this.parentElement.parentElement.remove(); calculateTotals()">Delete</button></td>
+      `;
+      tbody.appendChild(tr);
+      calculateTotals();
+    }
+
+    function addServiceRow(tableId) {
+      const tbody = document.getElementById(tableId).querySelector("tbody");
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td></td>
+        <td><input type="text" oninput="calculateTotals()"></td>
+        <td><input type="number" oninput="calculateTotals()"></td>
+        <td><button class="delete-btn" onclick="this.parentElement.parentElement.remove(); calculateTotals()">Delete</button></td>
+      `;
+      tbody.appendChild(tr);
+      calculateTotals();
+    }
+  </script>
+</body>
+
+</html>
