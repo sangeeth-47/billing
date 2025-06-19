@@ -63,12 +63,13 @@
     .billing-table {
       width: 100%;
       border-collapse: collapse;
+      border: 1px solid #d9534f
     }
 
     .billing-table th,
     .billing-table td {
-      border: 1px solid #ccc;
-      padding: 10px;
+      border: 1px solid #00000000;
+      padding: 4px;
       text-align: left;
     }
 
@@ -151,7 +152,7 @@
 
     .bill-info label {
       font-weight: bold;
-      text-align: right;
+      text-align: left;
     }
 
     .bill-info input {
@@ -160,8 +161,37 @@
     }
 
     @media print {
-      body * {
-        visibility: hidden;
+      header {
+  display: none !important;
+}
+#billing > div:first-child {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px !important; 
+  }
+  .customer-address {
+    max-width: 30% !important;
+    width: 30% !important;
+  }
+
+  .customer-address textarea {
+    display: none !important;
+  }
+
+  .customer-address p {
+    display: block !important;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    font-size: 10px;
+    visibility: visible !important;
+  }
+
+      body {
+        font-size: 10px;
+        visibility: visible;
       }
 
       #billing, #billing * {
@@ -174,34 +204,72 @@
         left: 0;
       }
 
-      nav, .add-row-btn, .print-btn, th:last-child, td:last-child, textarea, input[type="text"], input[type="number"], input[type="date"] {
+      nav, .add-row-btn, .print-btn, th:last-child, td:last-child, textarea {
         display: none !important;
       }
 
-      .billing-table input[readonly],
-      .billing-table td input[readonly] {
-        display: inline !important;
-        visibility: visible !important;
-        border: none;
-      }
 
-      .customer-address p,
-      .bill-info {
-        display: block !important;
-        visibility: visible !important;
-        position: relative;
-      }
+  #consumablesTable,
+  #consumablesTable *,
+  #servicesTable,
+  #servicesTable * {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-align:left !important;
+    font-size: 10px;
+  }    
+
+  #consumablesTable th:last-child,
+  #consumablesTable td:last-child,
+  #servicesTable th:last-child,
+  #servicesTable td:last-child {
+    display: none !important;
+  }
+  #consumablesTable,
+  #servicesTable {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    text-align:left !important;
+    font-size:10px;
+  }
+
+  .billing-table input[readonly],
+  .billing-table td input[readonly] {
+    display: inline !important;
+    visibility: visible !important;
+    border: none !important;
+    font-size: 10px;
+    outline: none !important;
+    background: transparent !important;
+    text-align:left !important;
+  }
+
+    .bill-info  {
+    display: flex !important;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    visibility: visible !important;
+    position: static;
+    width: 100%;
+    font-size:10px;
+  }
 
       .bill-info input {
-        display: inline !important;
+        display: inline-block !important;
         visibility: visible !important;
         border: none;
         width: auto;
+        margin-right: 10px;
+        font-size: 10px;
       }
 
       .bill-info input::before {
         content: attr(value);
         visibility: visible;
+        font-size: 10px;
       }
     }
   </style>
