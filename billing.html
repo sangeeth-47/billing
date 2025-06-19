@@ -189,6 +189,30 @@
     visibility: visible !important;
   }
 
+   body, html, #billing {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 2,2 !important;
+  padding: 5,5 !important;
+  overflow: visible !important;
+}
+
+.billing-table th,
+.billing-table td {
+  width: auto !important;
+  word-break: break-word !important;
+}
+
+.customer-address,
+.bill-info {
+  max-width: 30% !important;
+  width: 30% !important;
+}
+
+#billing > div:first-child > div:nth-child(2) {
+  max-width: 40% !important;
+  width: 40% !important;
+}
       body {
         font-size: 10px;
         visibility: visible;
@@ -303,7 +327,10 @@
       </div>
       <div class="bill-info" style="text-align: left; flex: 1; max-width: 30%;">
         <label>Bill No: <input type="text" id="billNo"></label>
-        <label>Date: <input type="date" id="date"></label>
+        <label>Date:
+  <input type="date" id="date" oninput="document.getElementById('dateText').textContent = this.value">
+  <span id="dateText" style="display:none;"></span>
+</label>
         <label>Vehicle No: <input type="text" id="vehicleNo"></label>
         <label>KM Covered: <input type="number" id="kmCovered"></label>
       </div>
@@ -417,6 +444,18 @@
       tbody.appendChild(tr);
       calculateTotals();
     }
+
+      // Change Title When printing
+      const originalTitle = document.title;
+
+      window.onbeforeprint = () => {
+    document.title = "Customer Copy";
+      };
+
+      window.onafterprint = () => {
+    document.title = originalTitle;
+  }; 
+  
   </script>
 </body>
 
