@@ -5,13 +5,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Workshop Billing System</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Verdana:wght@400;700&display=swap" rel="stylesheet">
   <style>
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Roboto', sans-serif;
+      font-family: "Helvetica", "Arial", sans-serif;
     }
 
     body {
@@ -63,6 +64,7 @@
     .billing-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed;
       border: 1px solid #d9534f
     }
 
@@ -72,6 +74,9 @@
       padding: 4px;
       text-align: left;
     }
+    .billing-table td input[type="text"] {
+  width: 100%;
+}
 
     .billing-table input[type="number"] {
       text-align: right;
@@ -81,14 +86,21 @@
       width: 100%;
     }
 
-    .billing-table td input:nth-child(2),
-    .billing-table td input:nth-child(3) {
-      width: 60px;
-    }
+    .billing-table td input.qty-input {
+  width: 50px; /* fits up to 3 digits comfortably */
+}
 
-    .billing-table td input:nth-child(4) {
-      width: 90px;
-    }
+.billing-table td input.price-input {
+  width: 70px; /* slightly wider for price */
+}
+
+    .billing-table th:nth-child(1), .billing-table td:nth-child(1) { width: 30px; }   /* # */
+    .billing-table th:nth-child(2), .billing-table td:nth-child(2) { width: 55%; text-align: left;}   /* Item */
+    .billing-table th:nth-child(3), .billing-table td:nth-child(3) { width: 60px; text-align: right;}  /* Qty */
+    .billing-table th:nth-child(4), .billing-table td:nth-child(4) { width: 70px; text-align: right;}  /* Price */
+    .billing-table th:nth-child(5), .billing-table td:nth-child(5) { width: 80px; text-align: right;}  /* Total */
+    .billing-table th:nth-child(6), .billing-table td:nth-child(6) { width: 40px; }  /* Action */
+
 
     .add-row-btn,
     .print-btn {
@@ -131,16 +143,6 @@
       border-radius: 10px;
     }
 
-    .customer-address textarea {
-      width: 100%;
-      height: 80px;
-    }
-
-    .customer-address p {
-      margin: 0;
-      white-space: pre-wrap;
-    }
-
     .bill-info {
       display: grid;
       grid-template-columns: max-content 1fr;
@@ -164,6 +166,9 @@
       header {
   display: none !important;
 }
+nav, .add-row-btn, .print-btn, th:last-child, td:last-child, textarea {
+        display: none !important;
+      }
 #billing > div:first-child {
     display: flex !important;
     flex-wrap: wrap !important;
@@ -171,25 +176,8 @@
     align-items: flex-start;
     margin-bottom: 20px !important; 
   }
-  .customer-address {
-    max-width: 30% !important;
-    width: 30% !important;
-  }
 
-  .customer-address textarea {
-    display: none !important;
-  }
-
-  .customer-address p {
-    display: block !important;
-    white-space: pre-wrap;
-    overflow-wrap: break-word;
-    word-break: break-word;
-    font-size: 10px;
-    visibility: visible !important;
-  }
-
-   body, html, #billing {
+  body, html, #billing {
   width: 100% !important;
   max-width: 100% !important;
   margin: 2,2 !important;
@@ -203,13 +191,63 @@
   word-break: break-word !important;
 }
 
-.customer-address,
 .bill-info {
   max-width: 30% !important;
   width: 30% !important;
 }
 
-#billing > div:first-child > div:nth-child(2) {
+.billing-table td:nth-child(1),
+.billing-table th:nth-child(1) {
+  width: 20px !important;
+  padding-right: 2px !important;
+}
+
+.billing-table td:nth-child(3),
+.billing-table th:nth-child(3),
+.billing-table td:nth-child(4),
+.billing-table th:nth-child(4),
+.billing-table td:nth-child(5),
+.billing-table th:nth-child(5) {
+  text-align: right !important;
+}
+
+
+.billing-table input[readonly],
+.billing-table td input[readonly] {
+  display: inline !important;
+  visibility: visible !important;
+  border: none !important;
+  background: transparent !important;
+  text-align: right !important;  /* ✅ Added this for right alignment */
+}
+
+.billing-table td input[type="number"]::after,
+  .billing-table td input[readonly]::after {
+    content: attr(data-print);
+    visibility: visible !important;
+    font-size: 10px;
+    color: black;
+    position: static;
+    display: inline-block;
+    text-align: right !important;
+  }
+
+  
+
+#servicesTable input[type="text"] {
+  visibility: hidden !important;  /* hide input but preserve its space */
+  position: absolute !important;  /* take it out of flow to avoid double height */
+}
+
+#servicesTable .print-text {
+  visibility: visible !important;
+  display: inline !important;
+  color: black !important;
+  font-size: 10px !important;
+  text-align: right !important;  /* ✅ Added for right alignment */
+}
+
+#billing > div:first-child(20) > div:nth-child(2) {
   max-width: 40% !important;
   width: 40% !important;
 }
@@ -228,10 +266,6 @@
         left: 0;
       }
 
-      nav, .add-row-btn, .print-btn, th:last-child, td:last-child, textarea {
-        display: none !important;
-      }
-
 
   #consumablesTable,
   #consumablesTable *,
@@ -241,7 +275,6 @@
     outline: none !important;
     background: transparent !important;
     box-shadow: none !important;
-    text-align:left !important;
     font-size: 10px;
   }    
 
@@ -255,7 +288,6 @@
   #servicesTable {
     border-collapse: collapse !important;
     border-spacing: 0 !important;
-    text-align:left !important;
     font-size:10px;
   }
 
@@ -267,7 +299,7 @@
     font-size: 10px;
     outline: none !important;
     background: transparent !important;
-    text-align:left !important;
+    text-align:right !important;
   }
 
     .bill-info  {
@@ -303,10 +335,7 @@
   <header>Workshop Billing System</header>
 
   <nav>
-    <!-- <button onclick="showSection('dashboard')">Dashboard</button> -->
     <button onclick="showSection('billing')">Billing</button>
-     <!-- <button onclick="showSection('inventory')">Inventory</button>
-    <button onclick="showSection('reports')">Reports</button> -->
   </nav>
 
   <section id="dashboard" class="section active dashboard">
@@ -315,29 +344,29 @@
   </section>
 
   <section id="billing" class="section">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: flex-start;">
-      <div class="customer-address" style="flex: 1; max-width: 30%;">
-        <label for="custAddr">Customer Address:</label>
-        <textarea id="custAddr" oninput="document.getElementById('custAddrText').textContent = this.value"></textarea>
-        <p id="custAddrText" style="display:none;"></p>
+    <!-- <div class="page-container"> -->
+      <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: flex-start;">
+        <div class="company-logo" style="flex: 1; max-width: 20%; display: flex; align-items: left; justify-content: left;">
+          <img src="assets/logo.jpg" alt="Company Logo" style="max-width: 50%; height: auto;">
+        </div>
+        <div style="text-align: center; flex: 1; max-width: 40%;">
+          <h2>Reborn Motorcycles</h2>
+          <p>Near Zonal Office Chelora Kannur - Mattannur Rd<br>Mathukkoth PIN : 670594<br>Royal Enfield Workshop<br>MOB: 9567714282 , 9744719133<br>
+            Email : Kkirantm@gmail.com</p>
+        </div>
+        <div class="bill-info" style="text-align: left; flex: 1; max-width: 30%;">
+          <label>Bill No: <input type="text" id="billNo"></label>
+          <label>Date:
+            <input type="date" id="date" readonly>
+            <span id="dateText" style="display:none;"></span>
+          </label>
+          <label>Vehicle No: <input type="text" id="vehicleNo"></label>
+          <label>Owner No: <input type="text" id="ownerNo"></label>
+          <label>KM Covered: <input type="number" id="kmCovered"></label>
+        </div>
       </div>
-      <div style="text-align: center; flex: 1; max-width: 40%;">
-        <h2>RE BORN Motorcycle</h2>
-        <p>Kannur - Mattannur Rd<br>Kannur, Kerala 670594</p>
-      </div>
-      <div class="bill-info" style="text-align: left; flex: 1; max-width: 30%;">
-        <label>Bill No: <input type="text" id="billNo"></label>
-        <label>Date:
-  <input type="date" id="date" oninput="document.getElementById('dateText').textContent = this.value">
-  <span id="dateText" style="display:none;"></span>
-</label>
-        <label>Vehicle No: <input type="text" id="vehicleNo"></label>
-        <label>KM Covered: <input type="number" id="kmCovered"></label>
-      </div>
-    </div>
-
     <div class="billing-container">
-      <h2>Consumables</h2>
+      <h2>Items</h2>
       <table class="billing-table" id="consumablesTable">
         <thead>
           <tr>
@@ -370,7 +399,17 @@
       <div class="grand-total">Grand Total: ₹ <span id="grandTotal">0.00</span></div>
       <button class="add-row-btn" onclick="addServiceRow('servicesTable')">+ Add Service</button>
       <button class="print-btn" onclick="window.print()">Print PDF</button>
-      <div class="signature">Sign: ___________________________</div>
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 3rem;">
+  <div class="upi-section" style="text-align: center;">
+    <strong>Pay Here</strong><br>
+    <img src="assets/myqr.jpg" alt="UPI QR Code" style="max-width: 60px; height: auto;"><br>
+    <small>UPI ID: 9400109413@yescred</small>
+  </div>
+  <div class="signature" style="text-align: right;">
+    Sign: ___________________________
+  </div>
+</div>
+
     </div>
   </section>
 
@@ -385,6 +424,16 @@
   </section>
 
   <script>
+
+    function setTodayDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+    document.getElementById('dateText').textContent = today;
+  }
+
+  // Set date when the page loads
+  window.onload = setTodayDate;
+
     function showSection(id) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById(id).classList.add('active');
@@ -418,44 +467,72 @@
     }
 
     function addRow(tableId) {
-      const tbody = document.getElementById(tableId).querySelector("tbody");
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td></td>
-        <td><input type="text" oninput="calculateTotals()"></td>
-        <td><input type="number" oninput="calculateTotals()"></td>
-        <td><input type="number" oninput="calculateTotals()"></td>
-        <td><input type="number" readonly></td>
-        <td><button class="delete-btn" onclick="this.parentElement.parentElement.remove(); calculateTotals()">Delete</button></td>
-      `;
-      tbody.appendChild(tr);
-      calculateTotals();
-    }
+  const tbody = document.getElementById(tableId).querySelector("tbody");
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td></td>
+    <td><input type="text" style="width: 100%;" oninput="this.setAttribute('data-value', this.value); calculateTotals()" data-value=""></td>
+    <td><input type="number" class="qty-input" max="999" oninput="if(this.value.length>3)this.value=this.value.slice(0,3);calculateTotals()"></td>
+    <td><input type="number" class="price-input" oninput="calculateTotals()"></td>
+    <td><input type="number" readonly></td>
+    <td><button class="delete-btn" onclick="this.parentElement.parentElement.remove(); calculateTotals()">Delete</button></td>
+  `;
+  tbody.appendChild(tr);
+  calculateTotals();
+}
 
-    function addServiceRow(tableId) {
-      const tbody = document.getElementById(tableId).querySelector("tbody");
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td></td>
-        <td><input type="text" oninput="calculateTotals()"></td>
-        <td><input type="number" oninput="calculateTotals()"></td>
-        <td><button class="delete-btn" onclick="this.parentElement.parentElement.remove(); calculateTotals()">Delete</button></td>
-      `;
-      tbody.appendChild(tr);
-      calculateTotals();
-    }
+
+function addServiceRow(tableId) {
+  const tbody = document.getElementById(tableId).querySelector("tbody");
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td></td>
+    <td>
+      <input type="text" style="width: 100%;" 
+        oninput="const span = this.parentElement.querySelector('.print-text'); span.textContent = this.value; calculateTotals()">
+      <span class="print-text" style="display: none;"></span>
+    </td>
+    <td><input type="number" oninput="calculateTotals()"></td>
+    <td><button class="delete-btn" onclick="this.parentElement.parentElement.remove(); calculateTotals()">Delete</button></td>
+  `;
+  tbody.appendChild(tr);
+  calculateTotals();
+}
+
+
 
       // Change Title When printing
       const originalTitle = document.title;
-
-      window.onbeforeprint = () => {
-    document.title = "Customer Copy";
-      };
-
-      window.onafterprint = () => {
-    document.title = originalTitle;
-  }; 
+    window.onbeforeprint = () => {
+  document.title = "Customer Copy";
   
+  // Format price and total columns with ₹ and .00 if needed
+  document.querySelectorAll('#consumablesTable tbody tr').forEach(row => {
+    const priceInput = row.children[3].querySelector('input');
+    const totalInput = row.children[4].querySelector('input');
+    
+    if (priceInput) {
+      let price = parseFloat(priceInput.value) || 0;
+      priceInput.setAttribute('data-print', `₹${price.toFixed(2)}`);
+    }
+    if (totalInput) {
+      let total = parseFloat(totalInput.value) || 0;
+      totalInput.setAttribute('data-print', `₹${total.toFixed(2)}`);
+    }
+  });
+
+  document.querySelectorAll('#servicesTable tbody tr').forEach(row => {
+    const chargeInput = row.children[2].querySelector('input');
+    if (chargeInput) {
+      let charge = parseFloat(chargeInput.value) || 0;
+      chargeInput.setAttribute('data-print', `₹${charge.toFixed(2)}`);
+    }
+  });
+};
+
+window.onafterprint = () => {
+  document.title = originalTitle;
+};
   </script>
 </body>
 
