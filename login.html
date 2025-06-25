@@ -11,15 +11,18 @@
   <link rel="icon" type="image/png" sizes="512x512" href="assets/android-chrome-512x512.png">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
   <style>
-   html, body {
+    
+  html, body {
   height: 100%;
-  width: 100%;
   margin: 0;
   padding: 0;
+  overflow: hidden;         /* prevents scrolling */
+  touch-action: none;       /* disables touch scroll */
+  -ms-overflow-style: none; /* IE/Edge scrollbars */
+  overscroll-behavior: none;/* prevent pull-to-refresh */
   font-family: 'Poppins', sans-serif;
   background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
   color: white;
-  overflow-x: hidden;
 }
 
 main {
