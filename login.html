@@ -99,17 +99,24 @@
     .disclaimer-banner span {
       display: inline-block;
       padding-left: 100%;
-      animation: scroll 10s linear infinite;
-      color: #ff8888;
-      font-size: 14px;
+      animation: scroll 12s linear infinite, glow 2s ease-in-out infinite alternate;
+      color: #ffffff;
+      font-size: 12px;
       font-weight: bold;
+      
     }
 
     @keyframes scroll {
       0% { transform: translateX(0); }
       100% { transform: translateX(-100%); }
     }
-
+    @keyframes glow {
+  from {
+    text-shadow: 0 0 3px #ff4c4c, 0 0 6px #ff1c1c;
+  }
+  to {
+    text-shadow: 0 0 6px #ff4c4c, 0 0 12px #ff1c1c, 0 0 18px #ff0000;
+  }}
     #toastContainer {
       position: fixed;
       bottom: 20px;
@@ -133,11 +140,26 @@
       90% { opacity: 1; }
       100% { opacity: 0; transform: translateX(50px); }
     }
+    .watermark-logo {
+  position: fixed;
+  top: 47%;
+  left: 50%;
+  width: 400px;
+  height: 400px;
+  background-image: url('assets/logo.png'); /* or .jpg/.svg */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 1; /* Adjust transparency */
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  pointer-events: none; /* Prevent interference with clicks */
+}
   </style>
 </head>
 <body>
   <div id="toastContainer"></div>
-
+  <div class="watermark-logo"></div>
   <main>
     <div id="loginForm">
       <h3 style="text-align:center; font-family: 'Papyrus', Harrington; font-size: 20px;">Login</h3>
