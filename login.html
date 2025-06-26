@@ -167,11 +167,44 @@ main {
   pointer-events: none;
 }
 
+.intro-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0f2027;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeOutIntro 1s ease 2.5s forwards; /* start fade after 2.5s */
+}
+
+.intro-logo {
+  width: 300px;
+  height: auto;
+  animation: zoomIn 1.5s ease;
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeOutIntro {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+
   </style>
 </head>
 <body>
   <div id="toastContainer"></div>
   <div class="watermark-logo"></div>
+  <div id="introScreen" class="intro-screen">
+  <img src="assets/logo.png" alt="Logo" class="intro-logo" />
+</div>
+
   <main>
     <div id="loginForm">
       <h3 style="text-align:center; font-family: 'Papyrus', Harrington; font-size: 20px;">Login</h3>
@@ -233,6 +266,21 @@ main {
     loader.style.display = "none";
   }
 }
+ window.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+      const intro = document.getElementById("introScreen");
+      const loginForm = document.getElementById("loginForm");
+
+      intro.style.display = "none"; // remove intro from DOM
+      loginForm.style.display = "block";
+      loginForm.style.opacity = 0;
+      loginForm.style.transition = "opacity 1s ease-in-out";
+
+      requestAnimationFrame(() => {
+        loginForm.style.opacity = 1;
+      });
+    }, 3000); // 3 seconds total (includes fade + delay)
+  });
   </script>
 </body>
 </html>
