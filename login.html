@@ -26,6 +26,7 @@
 
 main {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
@@ -195,6 +196,40 @@ main {
 @keyframes fadeOutIntro {
   to { opacity: 0; visibility: hidden; pointer-events: none; }
 }
+.glow-on-hover {
+      transition: all 0.3s ease;
+    }
+    .glow-on-hover:hover {
+      text-shadow: 0 0 5px #a28cf8, 0 0 10px #a28cf8, 0 0 20px #f8a7ff;
+      color: #fff;
+    }
+    @keyframes boxGlowPulse {
+      0%, 100% {
+        box-shadow: 0 0 20px rgba(123, 93, 244, 0.2), 0 0 30px rgba(211, 114, 255, 0.15);
+      }
+      50% {
+        box-shadow: 0 0 30px rgba(168, 120, 255, 0.4), 0 0 50px rgba(248, 167, 255, 0.25);
+      }
+    }
+
+    .app-powered {
+      border: 2px solid #a28cf8;
+      margin-top: 15px;
+      padding: 10px;
+      font-size: 0.9em;
+      color: #ffffff;
+      text-align: center;
+      cursor: context-menu;
+      z-index: 1;
+      text-decoration: none;
+      display: block;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(5px);
+      box-sizing: border-box;
+    }
 
   </style>
 </head>
@@ -213,8 +248,8 @@ main {
       <input type="password" id="password" placeholder="Password" />
       <button onclick="login()">Login</button>
       <div id="loader" class="loader" style="display: none;"></div>
-</div>
     </div>
+    <a href="https://sangeeth-47.github.io/main" target="_blank" class="app-powered glow-on-hover">Powered by SANGEETH M K</a>
   </main>
 
   <script>
