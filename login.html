@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" /> 
   <title>Login</title>
   <link rel="icon" type="image/x-icon" href="assets/favicon_visitor.ico" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
@@ -33,8 +34,6 @@ main {
   padding: 20px;
   box-sizing: border-box;
 }
-
-
 
     #loginForm {
       max-height: 100vh;
@@ -183,7 +182,7 @@ main {
 }
 
 .intro-logo {
-  width: 300px;
+  width: 50vw;
   height: auto;
   animation: zoomIn 1.5s ease;
 }
@@ -225,7 +224,43 @@ main {
       width: 100%;
       max-width: 400px;
     }
+    @media (max-width: 480px) {
+      body {
+        font-size: 14px;
+        padding: 10px;
+      }
 
+      #loginForm {
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
+        width: 90vw;
+        max-width: 95%;
+      }
+
+      .intro-logo {
+        width: 70vw;
+      }
+
+      .disclaimer-banner span {
+        font-size: 10px;
+      }
+
+      #loginForm input,
+      #loginForm button {
+        font-size: 14px;
+        padding: 8px;
+      }
+
+      .toast {
+        font-size: 13px;
+        padding: 8px 15px;
+      }
+
+      .app-powered {
+        font-size: 0.7em;
+      }
+    }
   </style>
 </head>
 <body>
