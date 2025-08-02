@@ -212,8 +212,8 @@ main {
     }
 
     .app-powered {
-      margin-top: 2px;
-      padding: 10px;
+      margin-top: 8px;
+      padding: 5px;
       font-size: 0.8em;
       color: #9e9e9e;
       text-align: center;
@@ -224,6 +224,89 @@ main {
       width: 100%;
       max-width: 400px;
     }
+    .app-version {
+      margin-top: 0px;
+      padding: 1px;
+      font-size: 0.6em;
+      color: #9e9e9e;
+      text-align: center;
+      cursor: context-menu;
+      z-index: 0;
+      text-decoration: none;
+      display: block;
+      width: 100%;
+      max-width: 400px;
+    }
+    .timeline-container {
+      margin-top: 20px;
+      display: none;
+      max-width: 360px;
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+      text-align: center;
+      border: 1px solid #9acdf7;
+      border-radius: 8px;
+      animation: fadeInZoom 0.8s ease;
+      z-index: 15;
+      white-space: nowrap;
+      position: static;
+    }
+    .timeline-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.timeline-container::-webkit-scrollbar-thumb {
+  background-color: #00e5ff;
+  border-radius: 3px;
+}
+
+.timeline-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+    .version-dot {
+      display: inline-block;
+      margin: 0 10px;
+      padding: 5px 10px;
+      backdrop-filter: blur(12px);
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .version-dot:hover {
+      background-color: #65cfe2ce;
+    }
+
+    .version-popup {
+      margin-bottom: 10px;
+      backdrop-filter: blur(6px);
+      color: #ffffff;
+      font-size: 12px;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 2px 8px rgba(227, 230, 63, 0.2);
+      white-space: normal;
+      min-width: 100px;
+      max-width: 70vw;
+      z-index: 99999;
+      display: none;
+    }
+/* .version-popup::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -6px;
+      border-width: 6px;
+      border-style: solid;
+      border-color: white transparent transparent transparent;
+    } */
     @media (max-width: 480px) {
       body {
         font-size: 14px;
@@ -260,6 +343,9 @@ main {
       .app-powered {
         font-size: 0.7em;
       }
+      .app-version {
+        font-size: 0.7em;
+      }
     }
   </style>
 </head>
@@ -280,6 +366,18 @@ main {
       <div id="loader" class="loader" style="display: none;"></div>
     </div>
     <a href="https://sangeeth-47.github.io/main" target="_blank" class="app-powered glow-on-hover">Powered by SANGEETH M K</a>
+    <div class="app-version glow-on-hover" onclick="toggleTimeline()">v1.7 Beta</div>
+<div class="timeline-container" id="timeline">
+  <div class="version-dot" onclick="showPopup(this, 'Version 1.7:<br>1. Integrated dynamic QR code scanner for payments<br>2. Fixed bug where retrieved invoice was overwritten upon submission')">v1.7</div>
+  <div class="version-dot" onclick="showPopup(this, 'Version 1.6:<br>1. Enhanced responsive layout for both mobile and desktop platforms')">v1.6</div>
+  <div class="version-dot" onclick="showPopup(this, 'Version 1.5:<br>1. Enabled invoice retrieval using mobile number and vehicle number<br>2. Added loading indicator for form submission and invoice lookup')">v1.5</div>
+  <div class="version-dot" onclick="showPopup(this, 'Version 1.4:<br>1. Applied database constraints for items and invoice drafts<br>2. Refactored database schema to support structured reporting')">v1.4</div>
+  <div class="version-dot" onclick="showPopup(this, 'Version 1.3:<br>1. Implemented QR code scanner for payment processing<br>2. Automated invoice number generation<br>3. Integrated intelligent item suggestion feature')">v1.3</div>
+  <div class="version-dot" onclick="showPopup(this, 'Version 1.2:<br>1. Introduced “Clear Page” and “New Bill” button functionalities for user workflow efficiency')">v1.2</div>
+  <div class="version-dot" onclick="showPopup(this, 'Version 1.1:<br>1. Embedded application branding with logo<br>2. Implemented JWT-based authentication for secure login')">v1.1</div>
+  <div class="version-dot" onclick="showPopup(this, 'Version 1.0:<br>Initial beta release with core login and billing modules')">v1.0</div>
+</div>
+
   </main>
 
   <script>
@@ -346,6 +444,66 @@ main {
       });
     }, 3000); // 3 seconds total (includes fade + delay)
   });
+
+  function toggleTimeline() {
+    const timeline = document.getElementById('timeline');
+    timeline.style.display = timeline.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function showPopup(elem, text) {
+  // Remove existing popup
+  const oldPopup = document.querySelector('.version-popup');
+  if (oldPopup) oldPopup.remove();
+
+  const rect = elem.getBoundingClientRect();
+
+  const popup = document.createElement('div');
+  popup.className = 'version-popup';
+  popup.innerHTML = text;
+  popup.style.display = 'block';
+  popup.style.position = 'fixed';
+  popup.style.visibility = 'hidden'; // Wait to calculate width
+
+  document.body.appendChild(popup);
+
+  // Calculate width and position
+  const popupWidth = popup.offsetWidth;
+  const popupHeight = popup.offsetHeight;
+  const centerX = rect.left + rect.width / 2;
+  let left = centerX - popupWidth / 2;
+
+  // Clamp within screen
+  if (left < 10) left = 10;
+  if (left + popupWidth > window.innerWidth - 10) {
+    left = window.innerWidth - popupWidth - 10;
+  }
+
+  // Determine vertical position (above or below)
+  const showBelow = rect.top < popupHeight + 20; // if not enough space above
+
+  if (showBelow) {
+    popup.classList.add('arrow-up');
+    popup.style.top = `${rect.bottom + 8}px`;
+  } else {
+    popup.classList.add('arrow-down');
+    popup.style.top = `${rect.top - popupHeight - 8}px`;
+  }
+
+  popup.style.left = `${left}px`;
+  popup.style.visibility = 'visible';
+
+  // Close popup on outside click
+  document.addEventListener('click', function handler(e) {
+    const timeline = document.getElementById('timeline');
+    const clickedInside = popup.contains(e.target) || elem.contains(e.target) || timeline.contains(e.target);
+    if (!clickedInside) {
+      popup.remove();
+      timeline.style.display = 'none';
+      document.removeEventListener('click', handler);
+    }
+  });
+}
+
   </script>
 </body>
 </html>
