@@ -210,6 +210,20 @@ main {
         box-shadow: 0 0 30px rgba(168, 120, 255, 0.4), 0 0 50px rgba(248, 167, 255, 0.25);
       }
     }
+    .app-glow-on-hover {
+      animation: glow-pulse 1s ease-in-out infinite alternate;
+    }
+    @keyframes glow-pulse {
+  0% {
+    text-shadow: 0 0 10px #a28cf8, 0 0 10px #a28cf8, 0 0 20px #f8a7ff;
+    transform: scale(1);
+  }
+  100% {
+    text-shadow: 0 0 15px #a28cf8, 0 0 25px #f8a7ff, 0 0 35px #f8a7ff;
+    transform: scale(1.08);
+  }
+}
+
 
     .app-powered {
       margin-top: 8px;
@@ -366,7 +380,7 @@ main {
       <div id="loader" class="loader" style="display: none;"></div>
     </div>
     <a href="https://sangeeth-47.github.io/main" target="_blank" class="app-powered glow-on-hover">Powered by SANGEETH M K</a>
-    <div class="app-version glow-on-hover" onclick="toggleTimeline()">v1.7 Beta</div>
+    <div class="app-version app-glow-on-hover glow-on-hover" onclick="toggleTimeline()">v1.7 Beta</div>
 <div class="timeline-container" id="timeline">
   <div class="version-dot" onclick="showPopup(this, 'Version 1.7:<br>1. Integrated dynamic QR code scanner for payments<br>2. Fixed bug where retrieved invoice was overwritten upon submission')">v1.7</div>
   <div class="version-dot" onclick="showPopup(this, 'Version 1.6:<br>1. Enhanced responsive layout for both mobile and desktop platforms')">v1.6</div>
