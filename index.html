@@ -424,7 +424,7 @@ main {
   loader.style.display = "block";
 
   try {
-    const response = await fetch(`${API_BASE}/billing-authapi`, {
+    const response = await fetch(`${API_BASE}/billing-authapi-backend`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
