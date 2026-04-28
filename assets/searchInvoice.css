@@ -1,0 +1,193 @@
+/* Scope everything under si- */
+
+.si-page {
+  position: relative;
+  min-height: 100vh;
+  padding: 2rem;
+  border-radius: 0;
+  background: radial-gradient(circle at 15% 20%, rgba(0, 224, 255, 0.2), transparent 35%),
+              radial-gradient(circle at 80% 10%, rgba(0, 133, 255, 0.2), transparent 30%),
+              linear-gradient(135deg, #0a1b2a 0%, #10293d 45%, #173a52 100%);
+  color: #e9f8ff;
+}
+
+#si-title {
+  text-align: center;
+  font-size: 2.2rem;
+  color: #00e0ff;
+  text-shadow: 0 0 10px #00e0ff;
+}
+
+.si-page label {
+  color: #d8efff;
+}
+
+.si-button-group {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.si-button-group input,
+.si-button-group button {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #00e0ff;
+  background: #1e1e2f;
+  color: white;
+}
+
+.si-button-group button {
+  background: #00e0ff;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.si-button-group button:hover {
+  background: #00bcd4;
+}
+
+#si-backBtn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  margin-top: 0;
+  z-index: 2;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #00e0ff;
+  background: #00e0ff;
+  color: black;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#si-backBtn:hover {
+  background: #00bcd4;
+}
+
+#si-invoiceOptions {
+  margin-top: 2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.si-invoice-card {
+  background: #1e1e2f;
+  padding: 1rem;
+  border-left: 4px solid #00e0ff;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.si-invoice-card:hover {
+  box-shadow: 0 0 10px #00e0ff;
+}
+
+/* Loader */
+#si-loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+}
+
+.si-clock-loader {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #00e0ff;
+  border-radius: 50%;
+  position: relative;
+}
+
+.si-clock-loader::after {
+  content: "";
+  width: 2px;
+  height: 15px;
+  background: #00e0ff;
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform-origin: bottom;
+  animation: si-spin 2s linear infinite;
+}
+
+@keyframes si-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Toast */
+.si-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ff4c4c;
+  padding: 14px;
+  border-radius: 8px;
+  display: none;
+  color: white;
+}
+
+.si-toast.show {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .si-page {
+    padding: 1rem;
+    border-radius: 0;
+  }
+
+  #si-title {
+    font-size: 1.5rem;
+    padding-right: 7rem;
+    text-align: left;
+  }
+
+  #si-backBtn {
+    position: static;
+    display: block;
+    width: 100%;
+    margin: 0.75rem 0 0;
+  }
+
+  .si-button-group {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .si-button-group input,
+  .si-button-group button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .si-button-group label {
+    width: 100%;
+  }
+
+  .si-button-group label input[type="date"] {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 0.35rem;
+  }
+
+  #si-invoiceOptions {
+    margin-top: 1.25rem;
+  }
+
+  .si-invoice-card {
+    padding: 0.9rem;
+  }
+}

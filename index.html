@@ -14,21 +14,37 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/android-chrome-192x192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/android-chrome-512x512.png">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap" rel="stylesheet">
+  <!-- JS -->
+  <script src="assets/billing.js"></script>
+  <script src="assets/searchInvoice.js"></script>
+  <!-- CSS -->
+  <link rel="stylesheet" href="assets/billing.css" />
+  <link rel="stylesheet" href="assets/searchInvoice.css" />
   <style>
 
-  html, body {
+  #billingapplogin {
   height: 100%;
+}
+
+#billingapplogin html,
+#billingapplogin body {
+  height: 100%;
+}
+
+#billingapplogin {
   margin: 0;
   padding: 0;
-  overflow: hidden;         /* prevents scrolling */
-  -ms-overflow-style: none; /* IE/Edge scrollbars */
-  overscroll-behavior: none;/* prevent pull-to-refresh */
+  overflow: hidden;
+  -ms-overflow-style: none;
+  overscroll-behavior: none;
   font-family: 'Poppins', sans-serif;
   background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
   color: white;
 }
 
-main {
+#billingapplogin main {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -38,58 +54,53 @@ main {
   box-sizing: border-box;
 }
 
-    #loginForm {
-      max-height: 100vh;
-      overflow: auto;
-      backdrop-filter: blur(12px);
-      background: rgba(255, 255, 255, 0.05);
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-      animation: fadeInZoom 0.8s ease;
-    }
+#billingapplogin #loginForm {
+  max-height: 100vh;
+  overflow: auto;
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  animation: fadeInZoom 0.8s ease;
+}
 
-    @keyframes fadeInZoom {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
+#billingapplogin #loginForm input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
 
-    #loginForm input {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 5px;
-      font-size: 14px;
-      background: rgba(255,255,255,0.1);
-      color: white;
-    }
+#billingapplogin #loginForm input::placeholder {
+  color: #ccc;
+}
 
-    #loginForm input::placeholder {
-      color: #ccc;
-    }
+#billingapplogin #loginForm button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  background: #00bcd4;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 0 10px #00bcd4;
+  transition: 0.3s;
+}
 
-    #loginForm button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      background: #00bcd4;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      box-shadow: 0 0 10px #00bcd4;
-      transition: 0.3s;
-    }
+#billingapplogin #loginForm button:hover {
+  background: #00e5ff;
+  box-shadow: 0 0 15px #00e5ff;
+}
 
-    #loginForm button:hover {
-      background: #00e5ff;
-      box-shadow: 0 0 15px #00e5ff;
-    }
-
-.loader {
+#billingapplogin .loader {
   width: 20px;
   aspect-ratio: 1;
   border-radius: 50%;
@@ -98,69 +109,48 @@ main {
   animation: l1 1s infinite;
   margin: 20px auto;
 }
-@keyframes l1 {to{transform: rotate(.5turn)}}
 
-    .disclaimer-banner {
-      position: relative;
-      white-space: nowrap;
-      overflow: hidden;
-      width: 100%;
-      height: 30px;
-    }
+#billingapplogin .disclaimer-banner {
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 100%;
+  height: 30px;
+}
 
-    .disclaimer-banner span {
-      display: inline-block;
-      padding-left: 100%;
-      animation: scroll 12s linear infinite, glow 2s ease-in-out infinite alternate;
-      color: #ffffff;
-      font-size: 12px;
-      font-weight: bold;
-      
-    }
+#billingapplogin .disclaimer-banner span {
+  display: inline-block;
+  padding-left: 100%;
+  animation: scroll 12s linear infinite, glow 2s ease-in-out infinite alternate;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: bold;
+}
 
-    @keyframes scroll {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-100%); }
-    }
-    @keyframes glow {
-  from {
-    text-shadow: 0 0 3px #ff4c4c, 0 0 6px #ff1c1c;
-  }
-  to {
-    text-shadow: 0 0 6px #ff4c4c, 0 0 12px #ff1c1c, 0 0 18px #ff0000;
-  }}
-    #toastContainer {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      z-index: 1000;
-    }
+#billingapplogin #toastContainer {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+}
 
-    .toast {
-      background-color: #333;
-      color: #fff;
-      padding: 10px 20px;
-      margin-top: 10px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(255,255,255,0.2);
-      opacity: 0.95;
-      animation: fadeOutRight 10s ease forwards;
-    }
+#billingapplogin .toast {
+  background-color: #333;
+  color: #fff;
+  padding: 10px 20px;
+  margin-top: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(255,255,255,0.2);
+  opacity: 0.95;
+  animation: fadeOutRight 10s ease forwards;
+}
 
-    @keyframes fadeOutRight {
-      0% { opacity: 1; transform: translateX(0);}
-      90% { opacity: 1; }
-      100% { opacity: 0; transform: translateX(50px); }
-    }
-
-  .watermark-logo {
+#billingapplogin .watermark-logo {
   position: fixed;
   top: 50%;
   left: 50%;
   width: 80vw;
   max-width: 400px;
-  height: auto;
-  aspect-ratio: 1;
   background-image: url('assets/logo.png');
   background-size: contain;
   background-repeat: no-repeat;
@@ -170,7 +160,7 @@ main {
   pointer-events: none;
 }
 
-.intro-screen {
+#billingapplogin .intro-screen {
   position: fixed;
   top: 0;
   left: 0;
@@ -181,12 +171,11 @@ main {
   justify-content: center;
   align-items: center;
   z-index: 9999;
-  animation: fadeOutIntro 1s ease 2.5s forwards; /* start fade after 2.5s */
+  animation: fadeOutIntro 1s ease 2.5s forwards;
 }
 
-.intro-logo {
+#billingapplogin .intro-logo {
   width: 50vw;
-  height: auto;
   animation: zoomIn 1.5s ease;
 }
 
@@ -367,6 +356,8 @@ main {
   </style>
 </head>
 <body>
+  <!-- Login UI container -->
+  <div id="billingapplogin">
   <div id="toastContainer"></div>
   <div class="watermark-logo"></div>
   <div id="introScreen" class="intro-screen">
@@ -382,7 +373,7 @@ main {
       <button onclick="login()">Login</button>
       <div id="loader" class="loader" style="display: none;"></div>
     </div>
-    <a href="https://sangeeth-47.github.io/main" target="_blank" class="app-powered glow-on-hover">Powered by SANGEETH M K</a>
+    <a href="https://sangeeth47.in/public" target="_blank" class="app-powered glow-on-hover">Powered by SANGEETH M K</a>
     <div class="app-version app-glow-on-hover glow-on-hover" onclick="toggleTimeline()">v1.9 Beta</div>
 <div class="timeline-container" id="timeline">
   <div class="version-dot" onclick="showPopup(this, 'Version 1.9 (27-Aug-25):<br>1. Fixed date picker default range issue in search invoice page<br>2. Fixed bug where red highlighter in auto-populated items was not clearing properly')">v1.9</div>
@@ -396,133 +387,248 @@ main {
   <div class="version-dot" onclick="showPopup(this, 'Version 1.1:<br>1. Embedded application branding with logo<br>2. Implemented JWT-based authentication for secure login')">v1.1</div>
   <div class="version-dot" onclick="showPopup(this, 'Version 1.0:<br>Initial beta release with core login and billing modules')">v1.0</div>
 </div>
-
   </main>
+</div>
+<!--Container for billing app will be injected here after login -->
+<div id="app"></div>
+<template id="billingTpl">
+  <header style="display:flex; justify-content:space-between; align-items:center;">
+    <span>Workshop Billing System</span>
+    <button onclick="signOut()" style="padding:6px 12px; cursor:pointer;">
+      Sign Out
+    </button>
+  </header>
+  <div class="watermark-logo"></div>
+  <nav>
+    <button id="billingBtn" onclick="showSection('billing')">Billing</button>
+    <button id="inventoryBtn" onclick="showSection('inventory')">Inventory</button>
+    <button id="viewInvoiceBtn" onclick="loadSearchInvoice()">View Invoices</button>
+  </nav>
+  <section id="dashboard" class="section active">
+    <h2 align="center">Navigation to billing / Invoice Section</h2>
+    <p align="center"><br>This section allows you to manage billing and invoicing.</p>
+  </section>
+  <section id="billing" class="section">
+    <button id="closeBillingBtn" class="close-btn" onclick="showSection('dashboard')">×</button>
+    <button id="clearpagebtn" class="clear-btn" onclick="clearBillingPage()" style="margin-right: 10px;">Clear Page</button>
+    <button id="newbillbtn" class="clear-btn" onclick="reloadForNewBill()">New Bill</button>
+      <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: flex-start;">
+        <div class="company-logo" style="
+          flex: 1; 
+          max-width: 30%; 
+          display: flex; 
+          align-items: flex-start; 
+          justify-content: flex-start; 
+          padding-right: 10px;
+          padding-left: 90px; 
+          padding-top: 1px;">
+  <img src="assets/logo.png" alt="Company Logo" style="max-width: 70%; height: auto;">
+</div>
+        <div id="shop-details" style="
+            flex: 1;
+            max-width: 40%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-top: 30px; 
+          ">
+          <h2 style="font-family: 'TheRedlightFree', sans-serif; font-size: 40px">Reborn Motorcycles</h2>
+          <br>
+          <p>Near Zonal Office Chelora Kannur <br>
+            Mattannur Rd Mathukkoth, PIN: 670594<br>
+            Royal Enfield Workshop<br>
+            MOB: 9567714282 , 9744719133<br>
+            Email : Kkirantm@gmail.com</p>
+        </div>
+        <div class="bill-info">
+  <div class="info-row"><span class="label-text">Bill No</span><span class="colon">:</span><input type="text" id="billNo"></div>
+  <div class="info-row"><span class="label-text">Date</span><span class="colon">:</span><input type="text" id="date" readonly></div>
+  <div class="info-row"><span class="label-text">Vehicle No</span><span class="colon">:</span><input type="text" id="vehicleNo"></div>
+  <div class="info-row"><span class="label-text">Mobile No</span><span class="colon">:</span><input type="text" id="ownerNo"></div>
+  <div class="info-row"><span class="label-text">KM Covered</span><span class="colon">:</span><input type="number" id="kmCovered"></div>
+</div>
+        </div>
+      </div>
+    <div class="billing-container">
+      <h2>Items</h2>
+      <table class="billing-table" id="consumablesTable">
+        <thead>
+          <tr>
+            <th class="ct-col1">#</th>
+            <th class="ct-col2">Item</th>
+            <th class="ct-col3">Qty</th>
+            <th class="ct-col4">Price</th>
+            <th class="ct-col5">Total</th>
+            <th class="ct-col6">Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="totals">Subtotal: ₹ <span id="consumableSubtotal">0.00</span></div>
+      <button class="add-row-btn" onclick="addRow('consumablesTable')">+ Add Consumable</button>
 
-  <script>
-    const API_BASE = "https://api.sangeeth47.in/api";
+      <h2>Services</h2>
+      <table class="billing-table" id="servicesTable">
+        <thead>
+  <tr>
+    <th class="st-col1">#</th>
+    <th class="st-col2">Service</th>
+    <th class="st-col3">Service Charge</th>
+    <th class="st-col4">Action</th>
+  </tr>
+</thead>
+        <tbody></tbody>
+      </table>
+      <div class="totals">Subtotal: ₹ <span id="serviceSubtotal">0.00</span></div>
+      <div class="grand-total">Grand Total: ₹ <span id="grandTotal">0.00</span></div>
+      <button class="add-row-btn" onclick="addServiceRow('servicesTable')">+ Add Service</button>
+      <button class="print-btn" onclick="prepareAndPrint()">Print PDF</button>
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 3rem;">
+  <div class="upi-section" style="text-align: center;">
+  <strong>Pay Here</strong><br>
+  <div id="qrWrapper" style="width: 80px; height: 80px; margin: auto; cursor: pointer;">
+    <img id="staticQR" src="assets/myqr.jpg" alt="UPI QR Code"
+         style="width: 100%; height: 100%; object-fit: contain;">
+  </div>
+  <small>UPI ID: 9400109413@yescred</small>
+</div>
+<div id="qrOverlay" style="display: none;">
+  <div id="qrOverlayContent">
+    <div id="qrFullScreen"></div>
+    <p style="text-align: center; margin-top: 10px;">Tap anywhere to close</p>
+  </div>
+</div>
+  <footer class="thank-you-footer">
+  <p style="font-family: 'TheRedlightFree', sans-serif; font-size: 25px">Thanks for doing business with us</p>
+</footer>
+  <div class="signature" style="text-align: right; margin-top: 1.5rem;">
+    Sign: ___________________________
+  </div>
+</div>
+  <datalist id="itemSuggestions"></datalist>
+    </div>
+  </section>
+  <section id="inventory" class="section inventory">
+    <button id="closeInventoryBtn" class="close-btn" onclick="showSection('dashboard')">×</button>
+    <h2>Inventory Management</h2><br>
+    <div class="inventory-container">
+      <div class="inventory-form">
+        <h3>Add New Items</h3><br>
+        <div id="itemInputs">
+          <div class="item-input-row">
+            <input type="text" id="itemName_1" placeholder="Item Name" class="item-name-input" oninput="clearErrorStyling(this)">
+            <input type="number" id="itemPrice_1" placeholder="Price" step="0.01" min="0" class="item-price-input" oninput="clearErrorStyling(this)">
+            <button type="button" onclick="addItemInputRow()" class="add-item-btn">+</button>
+            <button type="button" onclick="removeItemInputRow(this)" class="remove-item-btn" style="display: none;">-</button>
+          </div>
+        </div>
+        <button onclick="saveInventoryItems()" class="save-inventory-btn">Save Items</button>
+      </div>
+      
+      <div class="inventory-list">
+        <h3>Current Inventory</h3>
+        <div class="inventory-search">
+  <input required="" type="text" id="inventorySearch" name="text" autocomplete="off" class="input" onkeyup="filterInventory()"/>
+  <label class="inventory-label">Search items</label>
+  <div class="nebula-particle" style="--x:0.2; --y:-0.4; --delay:0.1s"></div>
+  <div class="nebula-particle" style="--x:0.5; --y:-0.2; --delay:0.3s"></div>
+  <div class="nebula-particle" style="--x:0.3; --y:0.3; --delay:0.5s"></div>
+  <div class="nebula-particle" style="--x:0.7; --y:0.1; --delay:0.2s"></div>
+  <div class="nebula-particle" style="--x:0.1; --y:-0.7; --delay:0.4s"></div>
+  <div class="nebula-particle" style="--x:0.6; --y:0.4; --delay:0.6s"></div>
+</div>
+        <table id="inventoryTable" class="inventory-table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Price</th>
+              <th>Used in Bills</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Inventory items will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+  <section id="reports" class="section reports">
+    <h2>Generate Report</h2>
+    <p>Report of current inventory and pricing</p>
+  </section>
+  <div id="invoiceOptions"></div>
+</section>
 
-    function showToast(message) {
-      const container = document.getElementById("toastContainer");
-      const toast = document.createElement("div");
-      toast.className = "toast";
-      toast.textContent = message;
-      container.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
+  <div id="SubmitInvoiceOverlay" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  font-family: Arial, sans-serif;
+"> <div style="display: flex; flex-direction: column; align-items: center;">
+    <div class="invoicespinner"></div>
+    <div style="margin-top: 12px; font-size: 24px; color: white;">
+      Submitting invoice, please wait...
+    </div>
+  </div>
+</div>
+<div id="NewInvoiceOverlay" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  font-family: Arial, sans-serif;
+"> <div style="display: flex; flex-direction: column; align-items: center;">
+    <div class="invoicespinner"></div>
+    <div style="margin-top: 12px; font-size: 24px; color: white;">
+      Generating New Invoice Number, please wait...
+    </div>
+  </div>
+  </div>
+<div id="inventory-spinner"></div>
+<div id="balloonMsg"></div>
+</template>
+<!-- Search Invoice -->
+<template id="searchInvoiceTpl">
+  <div class="si-page">
+  <h2 id="si-title">Search Invoices</h2>
+  <button id="si-backBtn" onclick="loadBillingApp()">Back to Dashboard</button>
 
-    async function login() {
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
-  const loader = document.getElementById("loader");
+  <div id="si-loadingOverlay">
+    <div class="si-clock-loader"></div>
+  </div>
 
-  if (!username || !password) {
-    showToast("Please enter username and password");
-    return;
-  }
+  <div class="si-button-group">
+    <input type="text" id="si-searchInput" placeholder="Enter mobile or vehicle no">
+    <button id="si-searchBtn" onclick="si_searchInvoice()">Search</button>
+    <button id="si-lastBtn" onclick="si_showLastInvoices()">Show Last 10 Invoices</button>
+  </div>
 
-  loader.style.display = "block";
+  <div class="si-button-group">
+    <label>From Date: <input type="date" id="si-fromDate"></label>
+    <label>To Date: <input type="date" id="si-toDate"></label>
+    <button id="si-dateBtn" onclick="si_fetchInvoicesByDate()">Fetch Invoices by Date</button>
+  </div>
 
-  try {
-    const response = await fetch(`${API_BASE}/billing-authapi-backend`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
-    });
+  <div id="si-invoiceOptions"></div>
 
-    if (response.ok) {
-      const html = await response.text();
-
-      // ✅ Replace current page with billing.html response
-      document.open();
-      document.write(html);
-      document.close();
-    } else {
-      const error = await response.json();
-      showToast(error.message || "Invalid credentials!");
-    }
-  } catch (error) {
-    console.error("Login error:", error);
-    showToast("Login failed. Please try again later.");
-  } finally {
-    loader.style.display = "none";
-  }
-}
- window.addEventListener("DOMContentLoaded", () => {
-    setTimeout(() => {
-      const intro = document.getElementById("introScreen");
-      const loginForm = document.getElementById("loginForm");
-
-      intro.style.display = "none"; // remove intro from DOM
-      loginForm.style.display = "block";
-      loginForm.style.opacity = 0;
-      loginForm.style.transition = "opacity 1s ease-in-out";
-
-      requestAnimationFrame(() => {
-        loginForm.style.opacity = 1;
-      });
-    }, 3000); // 3 seconds total (includes fade + delay)
-  });
-
-  function toggleTimeline() {
-    const timeline = document.getElementById('timeline');
-    timeline.style.display = timeline.style.display === 'block' ? 'none' : 'block';
-  }
-
-  function showPopup(elem, text) {
-  // Remove existing popup
-  const oldPopup = document.querySelector('.version-popup');
-  if (oldPopup) oldPopup.remove();
-
-  const rect = elem.getBoundingClientRect();
-
-  const popup = document.createElement('div');
-  popup.className = 'version-popup';
-  popup.innerHTML = text;
-  popup.style.display = 'block';
-  popup.style.position = 'fixed';
-  popup.style.visibility = 'hidden'; // Wait to calculate width
-
-  document.body.appendChild(popup);
-
-  // Calculate width and position
-  const popupWidth = popup.offsetWidth;
-  const popupHeight = popup.offsetHeight;
-  const centerX = rect.left + rect.width / 2;
-  let left = centerX - popupWidth / 2;
-
-  // Clamp within screen
-  if (left < 10) left = 10;
-  if (left + popupWidth > window.innerWidth - 10) {
-    left = window.innerWidth - popupWidth - 10;
-  }
-
-  // Determine vertical position (above or below)
-  const showBelow = rect.top < popupHeight + 20; // if not enough space above
-
-  if (showBelow) {
-    popup.classList.add('arrow-up');
-    popup.style.top = `${rect.bottom + 8}px`;
-  } else {
-    popup.classList.add('arrow-down');
-    popup.style.top = `${rect.top - popupHeight - 8}px`;
-  }
-
-  popup.style.left = `${left}px`;
-  popup.style.visibility = 'visible';
-
-  // Close popup on outside click
-  document.addEventListener('click', function handler(e) {
-    const timeline = document.getElementById('timeline');
-    const clickedInside = popup.contains(e.target) || elem.contains(e.target) || timeline.contains(e.target);
-    if (!clickedInside) {
-      popup.remove();
-      timeline.style.display = 'none';
-      document.removeEventListener('click', handler);
-    }
-  });
-}
-
-  </script>
+  <div id="si-toast" class="si-toast">No invoices found</div>
+  </div>
+</template>
 </body>
 </html>
