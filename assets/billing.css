@@ -691,7 +691,7 @@
     height: 400px;
     opacity: 0.05;
     transform: translate(-50%, -50%);
-    background: url('assets/logo.png') no-repeat center center;
+    background: url('https://billing.sangeeth47.in/assets/logo.png') no-repeat center center;
     background-size: contain;
     z-index: 0;
     pointer-events: none;
