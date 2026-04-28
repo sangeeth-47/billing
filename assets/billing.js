@@ -734,7 +734,7 @@ async function prepareAndPrint() {
     return;
   }
 
-const response = await fetch(`http://localhost:7071/api/billing-pdf`, {
+const response = await fetch(`https://api.sangeeth47.in/api/billing-pdf`, {
   method: "POST",
   headers: {
     "Content-Type": "application/json",
