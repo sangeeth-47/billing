@@ -325,29 +325,6 @@ window.addEventListener("DOMContentLoaded", () => {
   }, 3000);
 }});
 
-// billing.html JS
-
-(async () => {
-  const token = localStorage.getItem("access_token");
-
-  const res = await fetch(`https://api.sangeeth47.in/api/billing-serveapi-backend?file=qr.js`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-
-  if (res.ok) {
-    const js = await res.text();
-
-    // Create a <script> element and append it
-    const script = document.createElement("script");
-    script.textContent = js;
-    document.body.appendChild(script);
-  } else {
-    console.error("Failed to load script");
-  }
-})();
-
   function loadSearchInvoice() {
   const tpl = document.getElementById("searchInvoiceTpl");
   const app = document.getElementById("app");
