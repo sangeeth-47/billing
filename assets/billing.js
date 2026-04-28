@@ -700,6 +700,7 @@ function validateQty(input) {
 async function prepareAndPrint() {
   const selected = JSON.parse(localStorage.getItem("selectedInvoice"));
   const token = localStorage.getItem("access_token"); //
+  const pdfOverlay = document.getElementById('PdfGenerationOverlay');
 
   if (!selected) {
     alert("No invoice selected");
@@ -711,29 +712,40 @@ async function prepareAndPrint() {
     return;
   }
 
-const response = await fetch(`https://api.sangeeth47.in/api/billing-pdf`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${token}`
-  },
-  body: JSON.stringify({
-    invoice: selected
-  })
-});
+  try {
+    if (pdfOverlay) {
+      pdfOverlay.style.display = 'flex';
+    }
 
-  if (!response.ok) {
-    alert("PDF generation failed");
-    return;
+    const response = await fetch(`https://api.sangeeth47.in/api/billing-pdf`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        invoice: selected
+      })
+    });
+
+    if (!response.ok) {
+      alert("PDF generation failed");
+      return;
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `invoice_${selected.InvoiceID}.pdf`;
+    a.click();
+    window.setTimeout(() => window.URL.revokeObjectURL(url), 0);
+  } finally {
+    if (pdfOverlay) {
+      pdfOverlay.style.display = 'none';
+    }
   }
-
-  const blob = await response.blob();
-  const url = window.URL.createObjectURL(blob);
-
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `invoice_${selected.InvoiceID}.pdf`;
-  a.click();
 }
 
 function cleanEmptyAndPartialRows() {

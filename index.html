@@ -601,6 +601,25 @@
     </div>
   </div>
   </div>
+<div id="PdfGenerationOverlay" style="
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: white;
+  font-family: Arial, sans-serif;
+"> <div style="display: flex; flex-direction: column; align-items: center;">
+    <div class="invoicespinner"></div>
+    <div style="margin-top: 12px; font-size: 24px; color: white;">
+      Generating PDF, please wait...
+    </div>
+  </div>
+</div>
 <div id="inventory-spinner"></div>
 <div id="balloonMsg"></div>
 </template>
