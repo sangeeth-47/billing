@@ -81,10 +81,186 @@
   border-left: 4px solid #00e0ff;
   cursor: pointer;
   border-radius: 6px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .si-invoice-card:hover {
   box-shadow: 0 0 10px #00e0ff;
+}
+
+/* LEFT */
+.si-card-left {
+  color: #fff;
+}
+
+/* RIGHT */
+.si-card-right {
+  text-align: right;
+  font-size: 13px;
+}
+
+/* STATUS COLORS */
+.si-status.paid {
+  color: #00ff9c;
+  font-weight: bold;
+}
+
+.si-status.partial {
+  color: #ffb300;
+  font-weight: bold;
+}
+
+.si-status.unpaid {
+  color: #ff4d4d;
+  font-weight: bold;
+}
+
+.si-pay-btn {
+  margin-top: 6px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  background: #00e0ff;
+  color: #000;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.si-pay-btn:hover {
+  background: #00bcd4;
+}
+
+/* Update button (partial/paid) */
+.si-pay-btn.update {
+  background: #ffb300;
+  color: #000;
+}
+
+.si-pay-btn.update:hover {
+  background: #ffa000;
+}
+
+.si-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.si-modal-content {
+  background: #1e1e2f;
+  padding: 20px;
+  border-radius: 8px;
+  width: 300px;
+  color: #fff;
+}
+
+.si-modal-content input,
+.si-modal-content select,
+.si-modal-content textarea {
+  width: 100%;
+  margin: 6px 0 12px;
+  padding: 6px;
+  border-radius: 4px;
+  border: none;
+}
+
+.si-modal-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.si-modal-actions button {
+  background: #00e0ff;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+/* Align status + eye */
+.si-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+/* Eye button */
+.si-eye-btn {
+  background: transparent;
+  border: none;
+  color: #00e0ff;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+
+/* Hover effect */
+.si-eye-btn:hover {
+  background: rgba(0, 224, 255, 0.2);
+  color: #00ffff;
+}
+
+/* Optional: make it slightly glow like your theme */
+.si-eye-btn:hover {
+  box-shadow: 0 0 6px #00e0ff;
+}
+
+.si-history-item {
+  border-bottom: 1px solid #444;
+  padding: 8px 0;
+}
+
+.si-history-date {
+  font-size: 11px;
+  color: #aaa;
+}
+
+.si-history-remarks {
+  font-size: 12px;
+  color: #ccc;
+  margin-top: 2px;
+}
+
+.si-modal-btn {
+  background: #00e0ff;
+  color: #000;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  margin-top: 10px;
+  transition: 0.2s;
+}
+
+/* Hover */
+.si-modal-btn:hover {
+  background: #00bcd4;
+  box-shadow: 0 0 8px #00e0ff;
+}
+
+/* Optional: danger style (if needed later) */
+.si-modal-btn.danger {
+  background: #ff4d4d;
+  color: #fff;
+}
+
+.si-modal-btn.danger:hover {
+  background: #ff1a1a;
 }
 
 /* Loader */

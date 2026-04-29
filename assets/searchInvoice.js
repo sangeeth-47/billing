@@ -59,7 +59,7 @@ async function si_searchInvoice() {
     }
 
     const token = localStorage.getItem("access_token");
-    const res = await si_fetchJson(`https://api.sangeeth47.in/api/GetInvoicesByCustomer?vehicleNo=${query}&mobileNo=${query}`, {
+    const res = await si_fetchJson(`https://api.sangeeth47.in/api/billing-GetInvoicesByCustomer?vehicleNo=${query}&mobileNo=${query}`, {
       headers: {
         "Authorization": `Bearer ${token}`
       }
@@ -94,7 +94,7 @@ async function si_showLastInvoices() {
   try {
     const token = localStorage.getItem("access_token");
 
-    const res = await si_fetchJson(`https://api.sangeeth47.in/api/GetLastInvoices`, {
+    const res = await si_fetchJson(`https://api.sangeeth47.in/api/billing-GetLastInvoices`, {
       headers: {
         "Authorization": `Bearer ${token}`
       }
@@ -142,7 +142,7 @@ async function si_fetchInvoicesByDate() {
     }
 
     const res = await si_fetchJson(
-      `https://api.sangeeth47.in/api/GetInvoicesDated?fromDate=${from}&toDate=${to}`,
+      `https://api.sangeeth47.in/api/billing-GetInvoicesDated?fromDate=${from}&toDate=${to}`,
       {
         headers: {
           "Authorization": `Bearer ${token}`
@@ -184,12 +184,211 @@ function si_renderInvoices(data) {
   localStorage.setItem("si_invoiceCache", JSON.stringify(data));
 
   container.innerHTML = data.map(d => `
-    <div class="si-invoice-card" onclick="si_selectInvoice('${d.InvoiceID}')">
+    <div class="si-invoice-card" data-id="${d.InvoiceID}" onclick="si_selectInvoice('${d.InvoiceID}')">
+      ${si_getInvoiceCardHTML(d)}
+    </div>
+  `).join("");
+}
+
+
+// Add Payment
+
+let si_currentInvoiceId = null;
+let si_currentMaxAmount = 0;
+
+function si_addPaymentPrompt(invoiceId, maxAmount) {
+  si_currentInvoiceId = invoiceId;
+  si_currentMaxAmount = maxAmount;
+
+  document.getElementById("si-pay-amount").value = "";
+  document.getElementById("si-pay-mode").value = "UPI";
+  document.getElementById("si-pay-remarks").value = "";
+
+  document.getElementById("si-paymentModal").style.display = "flex";
+}
+
+function si_closePaymentModal() {
+  document.getElementById("si-paymentModal").style.display = "none";
+}
+
+async function si_submitPayment() {
+
+  const amount = parseFloat(document.getElementById("si-pay-amount").value);
+  const mode = document.getElementById("si-pay-mode").value;
+  const remarks = document.getElementById("si-pay-remarks").value;
+
+  if (!amount || amount <= 0) {
+    alert("Invalid amount");
+    return;
+  }
+
+  if (amount > si_currentMaxAmount) {
+    alert("Amount exceeds balance");
+    return;
+  }
+
+  const token = localStorage.getItem("access_token");
+
+  const res = await fetch("https://api.sangeeth47.in/api/billing-addpayment", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      invoiceId: si_currentInvoiceId,
+      amount,
+      mode,
+      remarks
+    })
+  });
+
+  if (!res.ok) {
+    si_showToast("Payment failed");
+    return;
+  }
+
+  const updated = await res.json();
+
+  si_updateInvoiceFromServer(updated);
+  si_closePaymentModal();
+}
+
+function si_updateInvoiceFromServer(updated) {
+
+  let data = JSON.parse(localStorage.getItem("si_invoiceCache") || "[]");
+
+  const index = data.findIndex(d => d.InvoiceID == updated.InvoiceID);
+  if (index === -1) return;
+
+  // ✅ overwrite with DB values
+  data[index] = {
+    ...data[index],
+    ...updated
+  };
+
+  localStorage.setItem("si_invoiceCache", JSON.stringify(data));
+
+  // ✅ update only that card
+  si_updateSingleCard(data[index]);
+}
+
+function si_updateSingleCard(d) {
+  const card = document.querySelector(`.si-invoice-card[data-id='${d.InvoiceID}']`);
+  if (!card) return;
+
+  card.innerHTML = si_getInvoiceCardHTML(d);
+}
+
+function si_getInvoiceCardHTML(d) {
+
+  const status = d.PaymentStatus || "Unpaid";
+  const paid = d.PaidAmount || 0;
+  const balance = d.RemainingAmount ?? d.GrandTotal;
+
+  const isPaid = status === "Paid";
+  const isPartial = status === "Partial";
+
+  return `
+    <div class="si-card-left">
       <strong>#${d.InvoiceID}</strong><br>
+<small>${d.MobileNo || "N/A"}</small><br>
       ${d.VehicleNo || "N/A"}<br>
       ₹${d.GrandTotal || 0}
     </div>
-  `).join("");
+    <div class="si-card-right">
+
+  <div class="si-status-row">
+    <span class="si-status ${isPaid ? "paid" : isPartial ? "partial" : "unpaid"}">
+      ${status}
+    </span>
+
+    <button class="si-eye-btn"
+      onclick="event.stopPropagation(); si_viewPayments('${d.InvoiceID}')">
+      👁
+    </button>
+  </div>
+
+  ${
+    isPaid || isPartial
+    ? `
+      Paid: ₹${paid}<br>
+      Bal: ₹${balance}<br>
+
+      ${
+        !isPaid
+        ? `<button class="si-pay-btn update"
+            onclick="event.stopPropagation(); si_addPaymentPrompt('${d.InvoiceID}', ${balance})">
+            Update Payment
+          </button>`
+        : ""
+      }
+    `
+    : `
+      <button class="si-pay-btn"
+        onclick="event.stopPropagation(); si_addPaymentPrompt('${d.InvoiceID}', ${balance})">
+        Enter Payment
+      </button>
+    `
+  }
+
+</div>
+  `;
+}
+
+async function si_viewPayments(invoiceId) {
+
+  const token = localStorage.getItem("access_token");
+
+  const res = await fetch(`https://api.sangeeth47.in/api/billing-GetPayments?invoiceId=${invoiceId}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!res.ok) {
+    si_showToast("Failed to load history");
+    return;
+  }
+
+  const data = await res.json();
+
+  const container = document.getElementById("si-historyList");
+
+container.innerHTML = data.map(p => {
+
+  let localTime = "Invalid";
+
+  if (p.PaymentDate) {
+    const dt = new Date(p.PaymentDate);
+
+    if (!isNaN(dt)) {
+      localTime = dt.toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false
+      });
+    }
+  }
+
+  return `
+    <div class="si-history-item">
+      <div>
+        <strong>₹${p.AmountPaid}</strong> (${p.PaymentMode})
+      </div>
+      <div class="si-history-date">${localTime}</div>
+      ${p.Remarks ? `<div class="si-history-remarks">${p.Remarks}</div>` : ""}
+    </div>
+  `;
+}).join("");
+
+  document.getElementById("si-historyModal").style.display = "flex";
+}
+
+function si_closeHistory() {
+  document.getElementById("si-historyModal").style.display = "none";
 }
 
 /* SELECT */

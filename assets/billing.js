@@ -350,7 +350,7 @@ window.addEventListener("DOMContentLoaded", () => {
       const token = localStorage.getItem("access_token");
 
       const res = await fetch(
-        `https://api.sangeeth47.in/api/GetConsumableSuggestions`,
+        `${API_BASE}/billing-GetConsumableSuggestions`,
         {
           headers: {
             "Authorization": `Bearer ${token}`
@@ -410,7 +410,7 @@ function handleSuggestionSelect(input) {
 
       // Step 1: Get next invoice ID
       const nextRes = await fetch(
-        `https://api.sangeeth47.in/api/GetNextInvoiceId`,
+        `${API_BASE}/billing-GetNextInvoiceId`,
         {
           headers: {
             "Authorization": `Bearer ${token}`
@@ -425,7 +425,7 @@ function handleSuggestionSelect(input) {
 
       // Step 2: Create draft invoice
       const res = await fetch(
-        `https://api.sangeeth47.in/api/CreateDraftInvoice`,
+        `${API_BASE}/billing-CreateDraftInvoice`,
         {
           method: 'POST',
           headers: {
@@ -511,7 +511,7 @@ function handleSuggestionSelect(input) {
   document.getElementById('SubmitInvoiceOverlay').style.display = 'flex';
 
   const token = localStorage.getItem("access_token");
-  const response = await fetch(`https://api.sangeeth47.in/api/UpdateInvoiceDetails`, {
+  const response = await fetch(`${API_BASE}/billing-UpdateInvoiceDetails`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -717,7 +717,7 @@ async function prepareAndPrint() {
       pdfOverlay.style.display = 'flex';
     }
 
-    const response = await fetch(`https://api.sangeeth47.in/api/billing-pdf`, {
+    const response = await fetch(`${API_BASE}/billing-pdf`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -1118,7 +1118,7 @@ async function saveInventoryItems() {
       return;
     }
 
-    const response = await fetch(`https://api.sangeeth47.in/api/inventory-create`, {
+    const response = await fetch(`${API_BASE}/billing-inventory-create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1174,7 +1174,7 @@ async function loadInventoryData() {
       return;
     }
 
-    const response = await fetch(`https://api.sangeeth47.in/api/inventory-get`, {
+    const response = await fetch(`${API_BASE}/billing-inventory-get`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -1245,7 +1245,7 @@ async function performDeleteInventoryItem(itemName, price) {
     }
     document.getElementById('inventory-spinner').style.display = 'grid'; // Show spinner while saving
     // Perform the delete request
-    const response = await fetch(`https://api.sangeeth47.in/api/inventory-delete`, {
+    const response = await fetch(`${API_BASE}/billing-inventory-delete`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -1373,7 +1373,7 @@ async function updateExistingInvoice() {
   try {
     const token = localStorage.getItem("access_token");
 
-    const res = await fetch(`https://api.sangeeth47.in/api/UpdateInvoiceDetails`, {
+    const res = await fetch(`${API_BASE}/billing-UpdateInvoiceDetails`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

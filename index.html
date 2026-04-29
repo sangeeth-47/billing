@@ -646,6 +646,39 @@
   </div>
 
   <div id="si-invoiceOptions"></div>
+  <div id="si-paymentModal" class="si-modal">
+  <div class="si-modal-content">
+
+    <h3>Enter Payment</h3>
+
+    <label>Amount</label>
+    <input type="number" id="si-pay-amount" />
+
+    <label>Payment Method</label>
+    <select id="si-pay-mode">
+      <option value="UPI" selected>UPI</option>
+      <option value="Cash">Cash</option>
+      <option value="Card">Card</option>
+    </select>
+
+    <label>Remarks</label>
+    <textarea id="si-pay-remarks" placeholder="Optional..."></textarea>
+
+    <div class="si-modal-actions">
+      <button onclick="si_submitPayment()">Submit</button>
+      <button onclick="si_closePaymentModal()">Cancel</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="si-historyModal" class="si-modal">
+  <div class="si-modal-content">
+    <h3>Payment History</h3>
+    <div id="si-historyList"></div>
+    <button class="si-modal-btn" onclick="si_closeHistory()">Close</button>
+  </div>
+</div>
 
   <div id="si-toast" class="si-toast">No invoices found</div>
   </div>
