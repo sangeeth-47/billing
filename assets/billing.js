@@ -558,11 +558,13 @@ function handleSuggestionSelect(input) {
   const billingBtn = document.getElementById('billingBtn');
   const inventoryBtn = document.getElementById('inventoryBtn');
   const viewInvoiceBtn = document.getElementById('viewInvoiceBtn');
+  const reportsBtn = document.getElementById('reportsBtn');
 
   // Reset all buttons to show first
   billingBtn.style.display = '';
   inventoryBtn.style.display = '';
   viewInvoiceBtn.style.display = '';
+  reportsBtn.style.display = '';
 
   if (id === 'billing') {
     // In billing tab: only show inventory button
@@ -583,6 +585,12 @@ function handleSuggestionSelect(input) {
 
     // Load inventory when inventory tab is clicked
     await loadInventoryData();
+  } else if (id === 'reports') {
+    reportsBtn.style.display = 'none';
+
+    if (typeof loadReportDashboard === 'function') {
+      await loadReportDashboard(false);
+    }
   } else if (id === 'dashboard') {
     // In home/dashboard: show all tabs
     // selectedInvoice persists unless explicitly cleared by reloadForNewBill or new invoice selection

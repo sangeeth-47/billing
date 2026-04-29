@@ -20,6 +20,7 @@
   <script src="assets/billing.js"></script>
   <script src="assets/searchInvoice.js"></script>
   <script src="assets/qr.js"></script>
+  <script src="assets/reportDashboard.js"></script>
   <!-- CSS -->
   <link rel="stylesheet" href="assets/billing.css" />
   <link rel="stylesheet" href="assets/searchInvoice.css" />
@@ -410,6 +411,7 @@
     <button id="billingBtn" onclick="showSection('billing')">Billing</button>
     <button id="inventoryBtn" onclick="showSection('inventory')">Inventory</button>
     <button id="viewInvoiceBtn" onclick="loadSearchInvoice()">View Invoices</button>
+    <button id="reportsBtn" onclick="showSection('reports')">Reports</button>
   </nav>
   <section id="dashboard" class="section active">
     <h2 align="center">Navigation to billing / Invoice Section</h2>
@@ -563,8 +565,105 @@
     </div>
   </section>
   <section id="reports" class="section reports">
-    <h2>Generate Report</h2>
-    <p>Report of current inventory and pricing</p>
+    <button id="closeReportsBtn" class="close-btn" onclick="showSection('dashboard')">×</button>
+    <div class="report-shell">
+      <div class="report-hero">
+        <div>
+          <div class="report-kicker">REBORN BUSINESS SUMMARY</div>
+          <h2>Report Dashboard</h2>
+          <p>Sales report, invoice report, customer history, inventory usage, pending payments, aging, and items sold.</p>
+        </div>
+        <div class="report-actions">
+          <button type="button" onclick="reportSetCurrentMonth()">This Month</button>
+          <button type="button" onclick="loadReportDashboard(true)">Refresh</button>
+        </div>
+      </div>
+
+      <div class="report-filters">
+        <label>
+          From
+          <input type="date" id="reportFromDate" />
+        </label>
+        <label>
+          To
+          <input type="date" id="reportToDate" />
+        </label>
+        <label>
+          Status
+          <select id="reportStatus">
+            <option value="all">All</option>
+            <option value="Paid">Paid</option>
+            <option value="Pending">Pending</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </label>
+        <label class="report-search">
+          Search
+          <input type="text" id="reportSearch" placeholder="Mobile, vehicle, or invoice no" />
+        </label>
+        <button type="button" class="report-apply-btn" onclick="loadReportDashboard(true)">Apply Filters</button>
+      </div>
+
+      <div id="reportSummary" class="report-summary-grid"></div>
+
+      <div class="report-grid">
+        <section class="report-panel report-panel-wide">
+          <div class="report-panel-header">
+            <h3>Sales report</h3>
+            <span id="reportSalesMeta" class="report-meta"></span>
+          </div>
+          <div id="reportSalesTrend" class="report-table-wrap"></div>
+        </section>
+
+        <section class="report-panel report-panel-wide">
+          <div class="report-panel-header">
+            <h3>Invoice report</h3>
+            <span id="reportInvoiceMeta" class="report-meta"></span>
+          </div>
+          <div id="reportInvoiceTable" class="report-table-wrap"></div>
+        </section>
+
+        <section class="report-panel">
+          <div class="report-panel-header">
+            <h3>Customer history</h3>
+            <span id="reportCustomerMeta" class="report-meta"></span>
+          </div>
+          <div id="reportCustomerTable" class="report-table-wrap"></div>
+        </section>
+
+        <section class="report-panel">
+          <div class="report-panel-header">
+            <h3>Pending payments</h3>
+            <span id="reportPendingMeta" class="report-meta"></span>
+          </div>
+          <div id="reportPendingTable" class="report-table-wrap"></div>
+        </section>
+
+        <section class="report-panel">
+          <div class="report-panel-header">
+            <h3>Pending aging</h3>
+            <span id="reportAgingMeta" class="report-meta"></span>
+          </div>
+          <div id="reportAgingTable" class="report-table-wrap"></div>
+        </section>
+
+        <section class="report-panel">
+          <div class="report-panel-header">
+            <h3>Inventory usage</h3>
+            <span id="reportInventoryMeta" class="report-meta"></span>
+          </div>
+          <div id="reportInventoryTable" class="report-table-wrap"></div>
+        </section>
+
+        <section class="report-panel report-panel-wide">
+          <div class="report-panel-header">
+            <h3>Items sold</h3>
+            <span id="reportItemsSoldMeta" class="report-meta"></span>
+          </div>
+          <div id="reportItemsSoldTable" class="report-table-wrap"></div>
+        </section>
+      </div>
+    </div>
   </section>
   <div id="invoiceOptions"></div>
 </section>
