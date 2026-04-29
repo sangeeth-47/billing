@@ -464,6 +464,11 @@
     color: #194e96;
   }
 
+  .reports .status-chip.reopened {
+    background: #e5f6ec;
+    color: #216a43;
+  }
+
   .reports .empty-state {
     padding: 1rem;
     color: #607888;

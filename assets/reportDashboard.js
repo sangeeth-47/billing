@@ -62,12 +62,46 @@ function reportStatusClass(status) {
   if (normalized === "paid") return "paid";
   if (normalized === "cancelled") return "cancelled";
   if (normalized === "partial") return "partial";
+  if (normalized.includes("reopen")) return "reopened";
   return "pending";
 }
 
-function reportChip(status) {
+function reportHasReopenInfo(invoice) {
+  return Boolean(invoice && (invoice.ReopenReason || invoice.ReopenedAt));
+}
+
+function reportDisplayStatus(invoice) {
+  const rawStatus = invoice?.InvoiceStatus || invoice?.PaymentStatus || "Pending";
+  const normalized = String(rawStatus).toLowerCase();
+  const isReopened = reportHasReopenInfo(invoice);
+
+  if (normalized === "paid") {
+    return isReopened
+      ? { label: "Paid - Reopened", className: "reopened" }
+      : { label: "Paid", className: "paid" };
+  }
+
+  if (normalized === "cancelled") {
+    return { label: "Cancelled", className: "cancelled" };
+  }
+
+  if (normalized === "partial") {
+    return isReopened
+      ? { label: "Partial - Reopened", className: "reopened" }
+      : { label: "Partial", className: "partial" };
+  }
+
+  if (isReopened) {
+    return { label: "Pending - Reopened", className: "reopened" };
+  }
+
+  return { label: rawStatus || "Pending", className: reportStatusClass(rawStatus) };
+}
+
+function reportChip(status, className = "") {
   const safeStatus = reportEscapeHtml(status || "Pending");
-  return `<span class="status-chip ${reportStatusClass(status)}">${safeStatus}</span>`;
+  const resolvedClassName = className || reportStatusClass(status);
+  return `<span class="status-chip ${resolvedClassName}">${safeStatus}</span>`;
 }
 
 function reportSetCurrentMonth() {
@@ -247,14 +281,14 @@ function reportBuildPendingAging(invoices) {
 
 function reportBuildRowsForInvoices(invoices) {
   return invoices.map((invoice) => {
-    const status = invoice.InvoiceStatus || invoice.PaymentStatus || "Pending";
+    const displayStatus = reportDisplayStatus(invoice);
     const cancelledReason = invoice.CancelledReason || "";
     const cancelledAt = invoice.CancelledAt || "";
     const reopenReason = invoice.ReopenReason || "";
     const reopenedAt = invoice.ReopenedAt || "";
     
     // Build a data attribute with cancellation/reopen info for click handler
-    const dataAttr = `data-invoice-id="${reportEscapeHtml(invoice.InvoiceID)}" data-status="${reportEscapeHtml(status)}" data-cancelled-reason="${reportEscapeHtml(cancelledReason)}" data-cancelled-at="${reportEscapeHtml(cancelledAt)}" data-reopen-reason="${reportEscapeHtml(reopenReason)}" data-reopened-at="${reportEscapeHtml(reopenedAt)}"`;
+    const dataAttr = `data-invoice-id="${reportEscapeHtml(invoice.InvoiceID)}" data-status="${reportEscapeHtml(displayStatus.label)}" data-cancelled-reason="${reportEscapeHtml(cancelledReason)}" data-cancelled-at="${reportEscapeHtml(cancelledAt)}" data-reopen-reason="${reportEscapeHtml(reopenReason)}" data-reopened-at="${reportEscapeHtml(reopenedAt)}"`;
     
     return `
       <tr>
@@ -265,7 +299,7 @@ function reportBuildRowsForInvoices(invoices) {
         <td>₹${reportEscapeHtml(reportFormatCurrency(invoice.GrandTotal || 0))}</td>
         <td>₹${reportEscapeHtml(reportFormatCurrency(invoice.PaidAmount || 0))}</td>
         <td>₹${reportEscapeHtml(reportFormatCurrency(invoice.RemainingAmount || 0))}</td>
-        <td><span class="report-status-chip" style="cursor:pointer;" ${dataAttr}>${reportChip(status)}</span></td>
+        <td><span class="report-status-chip" style="cursor:pointer;" ${dataAttr}>${reportChip(displayStatus.label, displayStatus.className)}</span></td>
       </tr>
     `;
   });
@@ -461,7 +495,7 @@ async function loadReportDashboard(forceReload = false) {
             <td>${reportEscapeHtml(row.MobileNo || "N/A")}</td>
             <td>${reportEscapeHtml(row.VehicleNo || "N/A")}</td>
             <td>₹${reportEscapeHtml(reportFormatCurrency(row.RemainingAmount || 0))}</td>
-            <td>${reportChip(row.InvoiceStatus || row.PaymentStatus || "Pending")}</td>
+            <td>${(() => { const displayStatus = reportDisplayStatus(row); return reportChip(displayStatus.label, displayStatus.className); })()}</td>
           </tr>
         `,
         emptyMessage: "No pending payments in the selected range."
