@@ -460,6 +460,11 @@
   <div class="info-row"><span class="label-text">Mobile No</span><span class="colon">:</span><input type="text" id="ownerNo"></div>
   <div class="info-row"><span class="label-text">KM Covered</span><span class="colon">:</span><input type="number" id="kmCovered"></div>
 </div>
+              <div id="invoiceStatusInfo" style="display:none; max-width:40%; padding:8px 12px; background: rgba(255,255,255,0.03); border-radius:6px; color: #dcefff; font-size:14px;">
+                <div><strong>Status:</strong> <span id="invoiceStatusText">Pending</span></div>
+                <div id="invoiceCancelledInfo" style="display:none; margin-top:6px; color:#ffb3b3;"><strong>Cancelled:</strong> <span id="invoiceCancelledReason"></span><br/><small id="invoiceCancelledAt" style="color:#ffdede"></small></div>
+                <div id="invoiceReopenInfo" style="display:none; margin-top:6px; color:#bff0c6;"><strong>Reopened:</strong> <span id="invoiceReopenReason"></span><br/><small id="invoiceReopenedAt" style="color:#dfffe6"></small></div>
+              </div>
         </div>
       </div>
     <div class="billing-container">

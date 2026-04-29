@@ -38,6 +38,25 @@ function reportFormatDateTime(value) {
   });
 }
 
+function formatToIST(ts) {
+  if (!ts) return '';
+  try {
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return ts;
+    return d.toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  } catch (e) {
+    return ts;
+  }
+}
+
 function reportStatusClass(status) {
   const normalized = String(status || "Pending").toLowerCase();
   if (normalized === "paid") return "paid";
@@ -229,6 +248,14 @@ function reportBuildPendingAging(invoices) {
 function reportBuildRowsForInvoices(invoices) {
   return invoices.map((invoice) => {
     const status = invoice.InvoiceStatus || invoice.PaymentStatus || "Pending";
+    const cancelledReason = invoice.CancelledReason || "";
+    const cancelledAt = invoice.CancelledAt || "";
+    const reopenReason = invoice.ReopenReason || "";
+    const reopenedAt = invoice.ReopenedAt || "";
+    
+    // Build a data attribute with cancellation/reopen info for click handler
+    const dataAttr = `data-invoice-id="${reportEscapeHtml(invoice.InvoiceID)}" data-status="${reportEscapeHtml(status)}" data-cancelled-reason="${reportEscapeHtml(cancelledReason)}" data-cancelled-at="${reportEscapeHtml(cancelledAt)}" data-reopen-reason="${reportEscapeHtml(reopenReason)}" data-reopened-at="${reportEscapeHtml(reopenedAt)}"`;
+    
     return `
       <tr>
         <td>#${reportEscapeHtml(invoice.InvoiceID)}</td>
@@ -238,7 +265,7 @@ function reportBuildRowsForInvoices(invoices) {
         <td>₹${reportEscapeHtml(reportFormatCurrency(invoice.GrandTotal || 0))}</td>
         <td>₹${reportEscapeHtml(reportFormatCurrency(invoice.PaidAmount || 0))}</td>
         <td>₹${reportEscapeHtml(reportFormatCurrency(invoice.RemainingAmount || 0))}</td>
-        <td>${reportChip(status)}</td>
+        <td><span class="report-status-chip" style="cursor:pointer;" ${dataAttr}>${reportChip(status)}</span></td>
       </tr>
     `;
   });
@@ -473,6 +500,9 @@ async function loadReportDashboard(forceReload = false) {
     }
 
     reportDashboardInitialized = true;
+    
+    // Initialize event delegation for status chips
+    setTimeout(() => initReportStatusChipEvents(), 100);
   } catch (error) {
     console.error("Report dashboard error:", error);
     if (summaryEl) {
@@ -500,4 +530,182 @@ async function loadReportDashboard(forceReload = false) {
       showToast("Unable to load report dashboard.");
     }
   }
+}
+
+// Tooltip element for status hover
+let statusTooltip = null;
+
+// Initialize event delegation for status chips in reports
+function initReportStatusChipEvents() {
+  const reportInvoiceTable = document.getElementById('reportInvoiceTable');
+  if (!reportInvoiceTable) return;
+  
+  // Event delegation for clicks
+  reportInvoiceTable.addEventListener('click', function(e) {
+    const chip = e.target.closest('.report-status-chip');
+    if (chip) {
+      e.preventDefault();
+      e.stopPropagation();
+      reportShowStatusDetail(chip);
+    }
+  });
+  
+  // Event delegation for hover (using mouseover/mouseout which bubble)
+  reportInvoiceTable.addEventListener('mouseover', function(e) {
+    const chip = e.target.closest('.report-status-chip');
+    if (chip) {
+      reportShowStatusTooltip(chip);
+    }
+  });
+  
+  reportInvoiceTable.addEventListener('mouseout', function(e) {
+    const chip = e.target.closest('.report-status-chip');
+    if (chip) {
+      reportHideStatusTooltip();
+    }
+  });
+}
+
+// Show tooltip on hover of status chip
+function reportShowStatusTooltip(element) {
+  const cancelledReason = element.getAttribute('data-cancelled-reason') || '';
+  const cancelledAt = element.getAttribute('data-cancelled-at') || '';
+  const reopenReason = element.getAttribute('data-reopen-reason') || '';
+  const reopenedAt = element.getAttribute('data-reopened-at') || '';
+  
+  if (!cancelledReason && !reopenReason) {
+    console.log('No tooltip data:', { cancelledReason, reopenReason });
+    return; // No details to show
+  }
+  
+  console.log('Showing tooltip for:', { cancelledReason, cancelledAt, reopenReason, reopenedAt });
+  
+  // Hide existing tooltip
+  reportHideStatusTooltip();
+  
+  // Create tooltip
+  statusTooltip = document.createElement('div');
+  statusTooltip.style.cssText = 'position:absolute; background:#1a1a1a; color:#fff; padding:12px 14px; border-radius:4px; font-size:12px; z-index:10000; box-shadow:0 2px 10px rgba(0,0,0,0.8); border:1px solid #555; max-width:320px; word-wrap:break-word; white-space:normal;';
+  
+  let tooltipHtml = '';
+  if (cancelledReason) {
+    const formattedTime = cancelledAt ? formatToIST(cancelledAt) : '';
+    tooltipHtml = `<div style="margin-bottom:8px; color:#ffb3b3; font-weight:bold; font-size:11px;">${formattedTime}</div><div style="color:#ddd;">${reportEscapeHtml(cancelledReason)}</div>`;
+  }
+  if (reopenReason) {
+    const formattedTime = reopenedAt ? formatToIST(reopenedAt) : '';
+    if (tooltipHtml) tooltipHtml += '<div style="margin-top:10px; border-top:1px solid #444; padding-top:10px;"></div>';
+    tooltipHtml += `<div style="margin-bottom:8px; color:#bff0c6; font-weight:bold; font-size:11px;">${formattedTime}</div><div style="color:#ddd;">${reportEscapeHtml(reopenReason)}</div>`;
+  }
+  
+  statusTooltip.innerHTML = tooltipHtml;
+  document.body.appendChild(statusTooltip);
+  
+  // Position tooltip with better centering and boundary checking
+  const rect = element.getBoundingClientRect();
+  const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  
+  let left = rect.left + scrollLeft + rect.width / 2;
+  let top = rect.bottom + scrollTop + 8;
+  
+  // Adjust if tooltip goes off-screen
+  left = Math.max(10, left - statusTooltip.offsetWidth / 2);
+  if (left + statusTooltip.offsetWidth > window.innerWidth + scrollLeft - 10) {
+    left = window.innerWidth + scrollLeft - statusTooltip.offsetWidth - 10;
+  }
+  
+  statusTooltip.style.left = left + 'px';
+  statusTooltip.style.top = top + 'px';
+}
+
+// Hide tooltip
+function reportHideStatusTooltip() {
+  if (statusTooltip) {
+    statusTooltip.remove();
+    statusTooltip = null;
+  }
+}
+
+// Show detail modal on click of status chip
+function reportShowStatusDetail(element) {
+  const invoiceId = element.getAttribute('data-invoice-id') || '';
+  const status = element.getAttribute('data-status') || 'Pending';
+  const cancelledReason = element.getAttribute('data-cancelled-reason') || '';
+  const cancelledAt = element.getAttribute('data-cancelled-at') || '';
+  const reopenReason = element.getAttribute('data-reopen-reason') || '';
+  const reopenedAt = element.getAttribute('data-reopened-at') || '';
+  
+  console.log('Status detail clicked:', { invoiceId, status, cancelledReason, cancelledAt, reopenReason, reopenedAt });
+  
+  if (!cancelledReason && !reopenReason) {
+    console.log('No cancellation or reopen data to display');
+    return; // No details to show
+  }
+  
+  // Create modal
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:10001; display:flex; align-items:center; justify-content:center;';
+  
+  const content = document.createElement('div');
+  content.style.cssText = 'background:#222; color:#fff; padding:20px; border-radius:8px; max-width:450px; width:90%; border:1px solid #444;';
+  
+  let detailsHtml = `<h3 style="margin-top:0; margin-bottom:20px; border-bottom:1px solid #444; padding-bottom:10px;">Invoice #${reportEscapeHtml(invoiceId)} - Status Details</h3>`;
+  
+  if (cancelledReason) {
+    const formattedTime = cancelledAt ? formatToIST(cancelledAt) : '';
+    detailsHtml += `<div style="margin-bottom:20px;">
+      <div style="margin-bottom:8px; color:#ffb3b3; font-weight:bold; font-size:12px;">Cancelled - ${formattedTime}</div>
+      <div style="padding:10px; background:#3a2a2a; border-radius:4px; color:#ddd; border-left:3px solid #ffb3b3;">${reportEscapeHtml(cancelledReason)}</div>
+    </div>`;
+  }
+  
+  if (reopenReason) {
+    const formattedTime = reopenedAt ? formatToIST(reopenedAt) : '';
+    detailsHtml += `<div style="margin-bottom:20px;">
+      <div style="margin-bottom:8px; color:#bff0c6; font-weight:bold; font-size:12px;">Reopened - ${formattedTime}</div>
+      <div style="padding:10px; background:#2a3a2a; border-radius:4px; color:#ddd; border-left:3px solid #bff0c6;">${reportEscapeHtml(reopenReason)}</div>
+    </div>`;
+  }
+  
+  detailsHtml += `<div style="margin-top:20px; text-align:right;"><button onclick="this.closest('div').parentElement.parentElement.remove()" style="padding:8px 16px; background:#444; color:#fff; border:none; border-radius:4px; cursor:pointer; font-weight:bold;">Close</button></div>`;
+  
+  content.innerHTML = detailsHtml;
+  modal.appendChild(content);
+  
+  // Close on outside click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) modal.remove();
+  });
+  
+  document.body.appendChild(modal);
+}
+
+// DEBUG: Test function to verify hover/click works with sample data
+window.testStatusChipHandlers = function() {
+  const testChip = document.createElement('span');
+  testChip.className = 'report-status-chip';
+  testChip.style.cssText = 'cursor:pointer; display:inline-block; padding:4px 8px; background:#f44; color:#fff; border-radius:3px; margin:10px; border:1px solid #c00;';
+  testChip.setAttribute('data-invoice-id', '999-TEST');
+  testChip.setAttribute('data-status', 'Cancelled');
+  testChip.setAttribute('data-cancelled-reason', 'Customer requested cancellation due to duplicate entry');
+  testChip.setAttribute('data-cancelled-at', new Date().toISOString());
+  testChip.setAttribute('data-reopen-reason', '');
+  testChip.setAttribute('data-reopened-at', '');
+  testChip.textContent = 'Cancelled [TEST]';
+  
+  testChip.addEventListener('click', function() {
+    reportShowStatusDetail(this);
+  });
+  
+  testChip.addEventListener('mouseover', function() {
+    reportShowStatusTooltip(this);
+  });
+  
+  testChip.addEventListener('mouseout', function() {
+    reportHideStatusTooltip();
+  });
+  
+  document.body.appendChild(testChip);
+  console.log('Test chip added. Click it or hover over it. Run testStatusChipHandlers() to add another test chip.');
 }

@@ -229,11 +229,13 @@ function setupSubmitButton() {
     const invoiceStatus = selected.InvoiceStatus || "Pending";
     const isCancelled = invoiceStatus === "Cancelled";
 
-    // Show/hide cancel and reopen buttons in header
+    // Show/hide cancel and reopen buttons in header; clear title tooltips so panel is primary
     const cancelBtn = document.getElementById("cancelInvoiceBtn");
     const reopenBtn = document.getElementById("reopenInvoiceBtn");
     
     if (cancelBtn) {
+      // remove hover-only tooltip
+      try { cancelBtn.title = ""; cancelBtn.setAttribute('aria-label', 'Cancel Invoice'); } catch(e){}
       if (isCancelled) {
         cancelBtn.style.display = "none";
       } else {
@@ -242,6 +244,8 @@ function setupSubmitButton() {
     }
     
     if (reopenBtn) {
+      // remove hover-only tooltip
+      try { reopenBtn.title = ""; reopenBtn.setAttribute('aria-label', 'Reopen Invoice'); } catch(e){}
       if (isCancelled) {
         reopenBtn.style.display = "inline-block";
       } else {
@@ -369,6 +373,7 @@ async function validateAndRefreshInvoiceStatus(invoiceId) {
 
       // Update buttons based on latest status
       setupSubmitButton();
+      try { updateInvoiceStatusUI(selected); } catch(e) { }
     }
   } catch (error) {
     console.error("Error validating invoice status:", error);
@@ -442,6 +447,7 @@ async function submitCancelInvoice(invoiceId, reason) {
 
       showToast("Invoice cancelled successfully");
       setupSubmitButton();
+      try { updateInvoiceStatusUI(selected); } catch(e) { }
     } else {
       alert("Failed to cancel invoice: " + (data.error || "Unknown error"));
       if (cancelBtn) {
@@ -520,6 +526,7 @@ async function submitReopenInvoice(invoiceId, remarks) {
 
       showToast("Invoice reopened successfully");
       setupSubmitButton();
+      try { updateInvoiceStatusUI(selected); } catch(e) { }
     } else {
       alert("Failed to reopen invoice: " + (data.error || "Unknown error"));
       if (reopenBtn) {
@@ -1691,4 +1698,71 @@ function loadInvoiceIntoBilling(data) {
   });
 
   calculateTotals();
+  // Update status and comment UI (if present)
+  try { updateInvoiceStatusUI(data); } catch (e) { /* ignore */ }
+}
+
+// Render invoice status and cancellation/reopen comments in the UI
+function updateInvoiceStatusUI(data) {
+  const selected = data || JSON.parse(localStorage.getItem("selectedInvoice") || "{}");
+  const statusText = document.getElementById('invoiceStatusText');
+  const cancelledInfo = document.getElementById('invoiceCancelledInfo');
+  const cancelledReasonEl = document.getElementById('invoiceCancelledReason');
+  const cancelledAtEl = document.getElementById('invoiceCancelledAt');
+  const reopenInfo = document.getElementById('invoiceReopenInfo');
+  const reopenReasonEl = document.getElementById('invoiceReopenReason');
+  const reopenedAtEl = document.getElementById('invoiceReopenedAt');
+
+  if (!statusText) return;
+
+  const invoiceStatus = selected.InvoiceStatus || selected.invoiceStatus || 'Pending';
+  statusText.textContent = invoiceStatus;
+
+  // Cancelled details
+  if (selected.CancelledReason || selected.cancelledReason) {
+    const reason = selected.CancelledReason || selected.cancelledReason || '';
+    const at = selected.CancelledAt || selected.cancelledAt || '';
+    if (cancelledInfo && cancelledReasonEl && cancelledAtEl) {
+      cancelledReasonEl.textContent = reason;
+      cancelledAtEl.textContent = at ? `At: ${formatToIST(at)}` : '';
+      cancelledInfo.style.display = 'block';
+    }
+  } else {
+    if (cancelledInfo) cancelledInfo.style.display = 'none';
+  }
+
+  // Reopen details
+  if (selected.ReopenReason || selected.reopenReason || selected.ReopenedAt || selected.reopenedAt) {
+    const rreason = selected.ReopenReason || selected.reopenReason || '';
+    const rat = selected.ReopenedAt || selected.reopenedAt || '';
+    if (reopenInfo && reopenReasonEl && reopenedAtEl) {
+      reopenReasonEl.textContent = rreason;
+      reopenedAtEl.textContent = rat ? `At: ${formatToIST(rat)}` : '';
+      reopenInfo.style.display = 'block';
+    }
+  } else {
+    if (reopenInfo) reopenInfo.style.display = 'none';
+  }
+}
+
+// Format a timestamp string to IST (Asia/Kolkata) readable format. Falls back to original input if parsing fails.
+function formatToIST(ts) {
+  if (!ts) return '';
+  try {
+    // Some backends send SQL datetime without timezone. Parse as local/UTC where possible.
+    const d = new Date(ts);
+    if (isNaN(d.getTime())) return ts;
+    // Use toLocaleString with Asia/Kolkata timezone
+    return d.toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  } catch (e) {
+    return ts;
+  }
 }
