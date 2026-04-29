@@ -47,8 +47,219 @@ function si_setDefaultDateRange() {
   toEl.value = si_formatDateInput(today);
 }
 
+const SI_RECENT_PAGE_SIZE = 10;
+let si_recentOffset = 0;
+let si_recentHasMore = true;
+let si_recentLoading = false;
+let si_recentModeActive = false;
+let si_dateOffset = 0;
+let si_dateHasMore = true;
+let si_dateLoading = false;
+let si_dateModeActive = false;
+let si_dateFrom = "";
+let si_dateTo = "";
+let si_scrollHandlerBound = false;
+
+function si_resetRecentState() {
+  si_recentOffset = 0;
+  si_recentHasMore = true;
+  si_recentLoading = false;
+  si_recentModeActive = true;
+  si_dateModeActive = false;
+}
+
+function si_resetDateState(fromDate, toDate) {
+  si_dateOffset = 0;
+  si_dateHasMore = true;
+  si_dateLoading = false;
+  si_dateModeActive = true;
+  si_recentModeActive = false;
+  si_dateFrom = fromDate;
+  si_dateTo = toDate;
+}
+
+function si_isNearBottom() {
+  const threshold = 220;
+  const scrollPosition = window.innerHeight + window.scrollY;
+  const pageHeight = document.documentElement.scrollHeight;
+  return scrollPosition >= pageHeight - threshold;
+}
+
+function si_bindRecentScroll() {
+  if (si_scrollHandlerBound) return;
+
+  window.addEventListener("scroll", () => {
+    if (!document.getElementById("si-invoiceOptions")) return;
+    if (!si_isNearBottom()) return;
+
+    if (si_recentModeActive && !si_recentLoading && si_recentHasMore) {
+      si_loadRecentInvoices({ append: true });
+      return;
+    }
+
+    if (si_dateModeActive && !si_dateLoading && si_dateHasMore) {
+      si_loadDateInvoices({ append: true });
+    }
+  });
+
+  si_scrollHandlerBound = true;
+}
+
+function si_setListStatus(message) {
+  const statusEl = document.getElementById("si-listStatus");
+  if (!statusEl) return;
+  statusEl.textContent = message;
+}
+
+async function si_loadRecentInvoices({ append }) {
+  if (si_recentLoading || !si_recentHasMore) return;
+
+  si_recentLoading = true;
+  let shouldAutoLoadMore = false;
+  si_setListStatus("Loading more invoices...");
+
+  try {
+    const token = localStorage.getItem("access_token");
+
+    const res = await si_fetchJson(
+      `https://api.sangeeth47.in/api/billing-GetLastInvoices?offset=${si_recentOffset}&limit=${SI_RECENT_PAGE_SIZE}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    if (res.status === 401) {
+      si_showToast("Session expired. Login again.");
+      si_recentModeActive = false;
+      return;
+    }
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const payload = await res.json();
+    const invoices = Array.isArray(payload) ? payload : (payload.invoices || []);
+    const hasMore = Array.isArray(payload) ? invoices.length === SI_RECENT_PAGE_SIZE : Boolean(payload.hasMore);
+
+    if (!invoices.length && !append) {
+      si_showToast("No invoices found");
+      si_setListStatus("No invoices found.");
+      si_recentHasMore = false;
+      return;
+    }
+
+    si_renderInvoices(invoices, { append });
+    si_recentOffset += invoices.length;
+    si_recentHasMore = hasMore;
+
+    if (!si_recentHasMore) {
+      si_setListStatus("You have reached the end (oldest invoice).");
+    } else {
+      si_setListStatus("Scroll down to load more invoices.");
+
+      if (document.documentElement.scrollHeight <= window.innerHeight + 20) {
+        shouldAutoLoadMore = true;
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    si_setListStatus("Unable to load invoices right now.");
+    si_showToast("Server unreachable. Try again later.");
+  } finally {
+    si_recentLoading = false;
+  }
+
+  if (shouldAutoLoadMore) {
+    await si_loadRecentInvoices({ append: true });
+  }
+}
+
+async function si_initRecentInvoices() {
+  si_resetRecentState();
+  si_bindRecentScroll();
+  await si_loadRecentInvoices({ append: false });
+}
+
+async function si_loadDateInvoices({ append }) {
+  if (si_dateLoading || !si_dateHasMore) return;
+
+  si_dateLoading = true;
+  let shouldAutoLoadMore = false;
+  si_setListStatus("Loading more date-filtered invoices...");
+
+  try {
+    const token = localStorage.getItem("access_token");
+
+    const res = await si_fetchJson(
+      `https://api.sangeeth47.in/api/billing-GetInvoicesDated?fromDate=${si_dateFrom}&toDate=${si_dateTo}&offset=${si_dateOffset}&limit=${SI_RECENT_PAGE_SIZE}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
+
+    if (res.status === 401) {
+      si_showToast("Session expired. Login again.");
+      si_dateModeActive = false;
+      return;
+    }
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const payload = await res.json();
+    const invoices = Array.isArray(payload) ? payload : (payload.invoices || []);
+    const hasMore = Array.isArray(payload) ? invoices.length === SI_RECENT_PAGE_SIZE : Boolean(payload.hasMore);
+
+    if (!invoices.length && !append) {
+      si_showToast("No invoices found");
+      si_setListStatus("No invoices found for selected dates.");
+      si_dateHasMore = false;
+      return;
+    }
+
+    si_renderInvoices(invoices, { append });
+    si_dateOffset += invoices.length;
+    si_dateHasMore = hasMore;
+
+    if (!si_dateHasMore) {
+      si_setListStatus("You have reached the end of date-filtered invoices.");
+    } else {
+      si_setListStatus("Scroll down to load more date-filtered invoices.");
+
+      if (document.documentElement.scrollHeight <= window.innerHeight + 20) {
+        shouldAutoLoadMore = true;
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    si_setListStatus("Unable to load date-filtered invoices right now.");
+    si_showToast("Server unreachable. Try again later.");
+  } finally {
+    si_dateLoading = false;
+  }
+
+  if (shouldAutoLoadMore) {
+    await si_loadDateInvoices({ append: true });
+  }
+}
+
+async function si_initDateInvoices(fromDate, toDate) {
+  si_resetDateState(fromDate, toDate);
+  si_bindRecentScroll();
+  await si_loadDateInvoices({ append: false });
+}
+
 /* SEARCH */
 async function si_searchInvoice() {
+  si_recentModeActive = false;
+  si_dateModeActive = false;
+  si_setListStatus("");
   await si_setLoading("si-searchBtn", true);
 
   try {
@@ -74,10 +285,12 @@ async function si_searchInvoice() {
     if (data.message === "No invoices found") {
       si_showToast("No invoices found");
       document.getElementById("si-invoiceOptions").innerHTML = "";
+      si_setListStatus("No invoices found.");
       return;
     }
 
     si_renderInvoices(data);
+    si_setListStatus("End of search results.");
 
   } catch (err) {
     console.error(err);
@@ -89,45 +302,14 @@ async function si_searchInvoice() {
 
 /* LAST 10 */
 async function si_showLastInvoices() {
-  await si_setLoading("si-lastBtn", true);
-
-  try {
-    const token = localStorage.getItem("access_token");
-
-    const res = await si_fetchJson(`https://api.sangeeth47.in/api/billing-GetLastInvoices`, {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    });
-
-    if (res.status === 401) {
-      si_showToast("Session expired. Login again.");
-      return;
-    }
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    if (!data.length) {
-      si_showToast("No invoices found");
-      return;
-    }
-
-    si_renderInvoices(data);
-
-  } catch (err) {
-    console.error(err);
-    si_showToast("Server unreachable. Try again later.");
-  } finally {
-    await si_setLoading("si-lastBtn", false);
-  }
+  await si_initRecentInvoices();
 }
 
 /* DATE SEARCH */
 async function si_fetchInvoicesByDate() {
+  si_recentModeActive = false;
+  si_dateModeActive = false;
+  si_setListStatus("");
   await si_setLoading("si-dateBtn", true);
 
   try {
@@ -141,33 +323,7 @@ async function si_fetchInvoicesByDate() {
       return;
     }
 
-    const res = await si_fetchJson(
-      `https://api.sangeeth47.in/api/billing-GetInvoicesDated?fromDate=${from}&toDate=${to}`,
-      {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      }
-    );
-
-    if (res.status === 401) {
-      si_showToast("Session expired. Login again.");
-      return;
-    }
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
-    }
-
-    const data = await res.json();
-
-    if (!data.length) {
-      si_showToast("No invoices found");
-      document.getElementById("si-invoiceOptions").innerHTML = "";
-      return;
-    }
-
-    si_renderInvoices(data);
+    await si_initDateInvoices(from, to);
 
   } catch (err) {
     console.error(err);
@@ -178,16 +334,28 @@ async function si_fetchInvoicesByDate() {
 }
 
 /* RENDER */
-function si_renderInvoices(data) {
+function si_renderInvoices(data, options = {}) {
+  const { append = false } = options;
   const container = document.getElementById("si-invoiceOptions");
 
-  localStorage.setItem("si_invoiceCache", JSON.stringify(data));
+  const existing = append
+    ? JSON.parse(localStorage.getItem("si_invoiceCache") || "[]")
+    : [];
+  const merged = [...existing, ...data];
 
-  container.innerHTML = data.map(d => `
+  localStorage.setItem("si_invoiceCache", JSON.stringify(merged));
+
+  const html = data.map(d => `
     <div class="si-invoice-card" data-id="${d.InvoiceID}" onclick="si_selectInvoice('${d.InvoiceID}')">
       ${si_getInvoiceCardHTML(d)}
     </div>
   `).join("");
+
+  if (append) {
+    container.insertAdjacentHTML("beforeend", html);
+  } else {
+    container.innerHTML = html;
+  }
 }
 
 

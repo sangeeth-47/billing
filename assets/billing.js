@@ -335,6 +335,10 @@ window.addEventListener("DOMContentLoaded", () => {
   if (typeof si_setDefaultDateRange === "function") {
     si_setDefaultDateRange();
   }
+
+  if (typeof si_initRecentInvoices === "function") {
+    si_initRecentInvoices();
+  }
 }
     async function setTodayDate() {
   const today = new Date();

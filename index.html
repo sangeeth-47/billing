@@ -107,8 +107,14 @@
   border-radius: 50%;
   border: 5px solid;
   border-color: #00ffff #00000000;
-  animation: l1 1s infinite;
+  animation: l1 0.8s linear infinite;
   margin: 20px auto;
+}
+
+@keyframes l1 {
+  to {
+    transform: rotate(1turn);
+  }
 }
 
 #billingapplogin .disclaimer-banner {
@@ -636,7 +642,7 @@
   <div class="si-button-group">
     <input type="text" id="si-searchInput" placeholder="Enter mobile or vehicle no">
     <button id="si-searchBtn" onclick="si_searchInvoice()">Search</button>
-    <button id="si-lastBtn" onclick="si_showLastInvoices()">Show Last 10 Invoices</button>
+    <button id="si-lastBtn" onclick="si_showLastInvoices()">Reload Recent Invoices</button>
   </div>
 
   <div class="si-button-group">
@@ -646,6 +652,9 @@
   </div>
 
   <div id="si-invoiceOptions"></div>
+  <div id="si-listStatus" style="text-align:center; margin-top:14px; margin-bottom:20px; font-size:13px; color:#b3ecff; min-height:20px;">
+    Loading recent invoices...
+  </div>
   <div id="si-paymentModal" class="si-modal">
   <div class="si-modal-content">
 
