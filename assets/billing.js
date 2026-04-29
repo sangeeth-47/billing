@@ -153,6 +153,11 @@ function initializeBilling() {
     const selected = JSON.parse(localStorage.getItem("selectedInvoice"));
     loadInvoiceIntoBilling(selected);
 
+    // Validate and refresh invoice status from server
+    if (selected && selected.InvoiceID) {
+      validateAndRefreshInvoiceStatus(selected.InvoiceID);
+    }
+
     // Switch to billing section
     showSection("billing");
   }
@@ -219,10 +224,41 @@ function setupSubmitButton() {
     printBtn.textContent = "Print PDF";
     printBtn.onclick = IS_DIRTY ? handlePrint : prepareAndPrint;
 
+    // Get current invoice status
+    const selected = JSON.parse(localStorage.getItem("selectedInvoice") || "{}");
+    const invoiceStatus = selected.InvoiceStatus || "Pending";
+    const isCancelled = invoiceStatus === "Cancelled";
+
+    // Show/hide cancel and reopen buttons in header
+    const cancelBtn = document.getElementById("cancelInvoiceBtn");
+    const reopenBtn = document.getElementById("reopenInvoiceBtn");
+    
+    if (cancelBtn) {
+      if (isCancelled) {
+        cancelBtn.style.display = "none";
+      } else {
+        cancelBtn.style.display = "inline-block";
+      }
+    }
+    
+    if (reopenBtn) {
+      if (isCancelled) {
+        reopenBtn.style.display = "inline-block";
+      } else {
+        reopenBtn.style.display = "none";
+      }
+    }
+
     container.appendChild(editBtn);
     container.appendChild(printBtn);
     return;
   }
+
+  // Hide cancel/reopen buttons when not in view mode
+  const cancelBtn = document.getElementById("cancelInvoiceBtn");
+  const reopenBtn = document.getElementById("reopenInvoiceBtn");
+  if (cancelBtn) cancelBtn.style.display = "none";
+  if (reopenBtn) reopenBtn.style.display = "none";
 
   // -------- NEW INVOICE MODE (not in view mode) --------
   {
@@ -300,6 +336,205 @@ function trackChanges() {
       setupSubmitButton();
     }
   });
+}
+
+// Validate and refresh invoice status from server
+async function validateAndRefreshInvoiceStatus(invoiceId) {
+  try {
+    const token = localStorage.getItem("access_token");
+    const response = await fetch(`${API_BASE}/billing-GetInvoiceStatus?invoiceId=${encodeURIComponent(invoiceId)}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      console.warn("Failed to validate invoice status:", response.status);
+      return;
+    }
+
+    const data = await response.json();
+    
+    if (data.invoiceId) {
+      // Update localStorage with latest status
+      const selected = JSON.parse(localStorage.getItem("selectedInvoice") || "{}");
+      selected.InvoiceStatus = data.invoiceStatus;
+      selected.CancelledAt = data.cancelledAt;
+      selected.CancelledReason = data.cancelledReason;
+      selected.ReopenedAt = data.reopenedAt;
+      selected.ReopenReason = data.reopenReason;
+      selected.PaidAmount = data.paidAmount;
+      selected.GrandTotal = data.grandTotal;
+      localStorage.setItem("selectedInvoice", JSON.stringify(selected));
+
+      // Update buttons based on latest status
+      setupSubmitButton();
+    }
+  } catch (error) {
+    console.error("Error validating invoice status:", error);
+    // Continue anyway with existing data
+  }
+}
+
+// Cancel Invoice Modal and Handler
+function showCancelInvoiceModal() {
+  const modal = document.getElementById("cancelInvoiceModal");
+  const input = document.getElementById("cancelReasonInput");
+  if (modal && input) {
+    input.value = "";
+    modal.style.display = "flex";
+  }
+}
+
+function closeCancelModal() {
+  const modal = document.getElementById("cancelInvoiceModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+function submitCancelInvoiceFromModal() {
+  const selected = JSON.parse(localStorage.getItem("selectedInvoice") || "{}");
+  const reason = document.getElementById("cancelReasonInput")?.value.trim() || "";
+
+  if (!selected.InvoiceID) {
+    alert("Invoice ID not found");
+    return;
+  }
+
+  if (!reason) {
+    alert("Please enter a reason for cancellation");
+    return;
+  }
+
+  closeCancelModal();
+  submitCancelInvoice(selected.InvoiceID, reason);
+}
+
+async function submitCancelInvoice(invoiceId, reason) {
+  const token = localStorage.getItem("access_token");
+  const cancelBtn = document.getElementById("cancelInvoiceBtn");
+  
+  if (cancelBtn) {
+    cancelBtn.disabled = true;
+    cancelBtn.textContent = "Cancelling...";
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/billing-CancelInvoice`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ invoiceId, reason })
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      // Update localStorage with new status
+      const selected = JSON.parse(localStorage.getItem("selectedInvoice") || "{}");
+      selected.InvoiceStatus = data.invoice.invoiceStatus;
+      selected.CancelledAt = data.invoice.cancelledAt;
+      selected.CancelledReason = data.invoice.cancelledReason;
+      localStorage.setItem("selectedInvoice", JSON.stringify(selected));
+
+      showToast("Invoice cancelled successfully");
+      setupSubmitButton();
+    } else {
+      alert("Failed to cancel invoice: " + (data.error || "Unknown error"));
+      if (cancelBtn) {
+        cancelBtn.disabled = false;
+        cancelBtn.textContent = "Cancel Invoice";
+      }
+    }
+  } catch (error) {
+    console.error("Cancel invoice error:", error);
+    alert("Error cancelling invoice: " + error.message);
+    if (cancelBtn) {
+      cancelBtn.disabled = false;
+      cancelBtn.textContent = "Cancel Invoice";
+    }
+  }
+}
+
+// Reopen Invoice Modal and Handler
+function showReopenInvoiceModal() {
+  const modal = document.getElementById("reopenInvoiceModal");
+  const input = document.getElementById("reopenRemarksInput");
+  if (modal && input) {
+    input.value = "";
+    modal.style.display = "flex";
+  }
+}
+
+function closeReopenModal() {
+  const modal = document.getElementById("reopenInvoiceModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+
+function submitReopenInvoiceFromModal() {
+  const selected = JSON.parse(localStorage.getItem("selectedInvoice") || "{}");
+  const remarks = document.getElementById("reopenRemarksInput")?.value.trim() || "";
+
+  if (!selected.InvoiceID) {
+    alert("Invoice ID not found");
+    return;
+  }
+
+  closeReopenModal();
+  submitReopenInvoice(selected.InvoiceID, remarks);
+}
+
+async function submitReopenInvoice(invoiceId, remarks) {
+  const token = localStorage.getItem("access_token");
+  const reopenBtn = document.getElementById("reopenInvoiceBtn");
+  
+  if (reopenBtn) {
+    reopenBtn.disabled = true;
+    reopenBtn.textContent = "Reopening...";
+  }
+
+  try {
+    const response = await fetch(`${API_BASE}/billing-ReopenInvoice`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ invoiceId, remarks })
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      // Update localStorage with new status
+      const selected = JSON.parse(localStorage.getItem("selectedInvoice") || "{}");
+      selected.InvoiceStatus = data.invoice.invoiceStatus;
+      selected.ReopenedAt = data.invoice.reopenedAt;
+      selected.ReopenReason = data.invoice.reopenReason;
+      localStorage.setItem("selectedInvoice", JSON.stringify(selected));
+
+      showToast("Invoice reopened successfully");
+      setupSubmitButton();
+    } else {
+      alert("Failed to reopen invoice: " + (data.error || "Unknown error"));
+      if (reopenBtn) {
+        reopenBtn.disabled = false;
+        reopenBtn.textContent = "Reopen Invoice";
+      }
+    }
+  } catch (error) {
+    console.error("Reopen invoice error:", error);
+    alert("Error reopening invoice: " + error.message);
+    if (reopenBtn) {
+      reopenBtn.disabled = false;
+      reopenBtn.textContent = "Reopen Invoice";
+    }
+  }
 }
 
 window.addEventListener("DOMContentLoaded", () => {

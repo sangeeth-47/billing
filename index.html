@@ -421,6 +421,8 @@
     <button id="closeBillingBtn" class="close-btn" onclick="showSection('dashboard')">×</button>
     <button id="clearpagebtn" class="clear-btn" onclick="clearBillingPage()" style="margin-right: 10px;">Clear Page</button>
     <button id="newbillbtn" class="clear-btn" onclick="reloadForNewBill()">New Bill</button>
+    <button id="cancelInvoiceBtn" class="clear-btn" style="color: #dc3545; display: none; margin-right: 10px; margin-left: 10px;" onclick="showCancelInvoiceModal()">Cancel Invoice</button>
+    <button id="reopenInvoiceBtn" class="clear-btn" style="color: #28a745; display: none; margin-right: 10px; margin-left: 10px;" onclick="showReopenInvoiceModal()">Reopen Invoice</button>
       <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: flex-start;">
         <div class="company-logo" style="
           flex: 1; 
@@ -667,6 +669,32 @@
   </section>
   <div id="invoiceOptions"></div>
 </section>
+
+<!-- Cancel Invoice Modal -->
+<div id="cancelInvoiceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;" onclick="if(event.target.id === 'cancelInvoiceModal') closeCancelModal()">
+  <div style="background: white; padding: 20px; border-radius: 8px; max-width: 400px; width: 90%; color: #333;">
+    <h3 style="margin-top: 0;">Cancel Invoice</h3>
+    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Reason for cancellation:</label>
+    <textarea id="cancelReasonInput" placeholder="Enter reason..." style="width: 100%; height: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial; box-sizing: border-box;"></textarea>
+    <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+      <button onclick="closeCancelModal()" style="padding: 8px 16px; border: 1px solid #ccc; background: #f0f0f0; cursor: pointer; border-radius: 4px;">Cancel</button>
+      <button onclick="submitCancelInvoiceFromModal()" style="padding: 8px 16px; color: #dc3545; border: none; cursor: pointer; border-radius: 4px; background: transparent;">Confirm Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reopen Invoice Modal -->
+<div id="reopenInvoiceModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;" onclick="if(event.target.id === 'reopenInvoiceModal') closeReopenModal()">
+  <div style="background: white; padding: 20px; border-radius: 8px; max-width: 400px; width: 90%; color: #333;">
+    <h3 style="margin-top: 0;">Reopen Invoice</h3>
+    <label style="display: block; margin-bottom: 10px; font-weight: bold;">Remarks for reopening:</label>
+    <textarea id="reopenRemarksInput" placeholder="Enter remarks..." style="width: 100%; height: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-family: Arial; box-sizing: border-box;"></textarea>
+    <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: flex-end;">
+      <button onclick="closeReopenModal()" style="padding: 8px 16px; border: 1px solid #ccc; background: #f0f0f0; cursor: pointer; border-radius: 4px;">Cancel</button>
+      <button onclick="submitReopenInvoiceFromModal()" style="padding: 8px 16px; color: #28a745; border: none; cursor: pointer; border-radius: 4px; background: transparent;">Confirm Reopen</button>
+    </div>
+  </div>
+</div>
 
   <div id="SubmitInvoiceOverlay" style="
   display: none;

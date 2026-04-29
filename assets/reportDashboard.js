@@ -1,4 +1,4 @@
-const REPORT_API_BASE = "http://localhost:7071/api";
+const REPORT_API_BASE = "https://api.sangeeth47.in/api";
 let reportDashboardInitialized = false;
 
 function reportEscapeHtml(value) {
