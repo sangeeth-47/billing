@@ -456,51 +456,56 @@ function si_getInvoiceCardHTML(d) {
 
   const isPaid = status === "Paid";
   const isPartial = status === "Partial";
+  const isCancelled = status === "Cancelled"; 
 
   return `
     <div class="si-card-left">
       <strong>#${d.InvoiceID}</strong><br>
-<small>${d.MobileNo || "N/A"}</small><br>
+      <small>${d.MobileNo || "N/A"}</small><br>
       ${d.VehicleNo || "N/A"}<br>
       ₹${d.GrandTotal || 0}
     </div>
+
     <div class="si-card-right">
 
-  <div class="si-status-row">
-    <span class="si-status ${isPaid ? "paid" : isPartial ? "partial" : "unpaid"}">
-      ${status}
-    </span>
+      <div class="si-status-row">
+        <span class="si-status 
+          ${isPaid ? "paid" : isPartial ? "partial" : isCancelled ? "cancelled" : "unpaid"}">
+          ${status}
+        </span>
 
-    <button class="si-eye-btn"
-      onclick="event.stopPropagation(); si_viewPayments('${d.InvoiceID}')">
-      👁
-    </button>
-  </div>
-
-  ${
-    isPaid || isPartial
-    ? `
-      Paid: ₹${paid}<br>
-      Bal: ₹${balance}<br>
+        <button class="si-eye-btn"
+          onclick="event.stopPropagation(); si_viewPayments('${d.InvoiceID}')">
+          👁
+        </button>
+      </div>
 
       ${
-        !isPaid
-        ? `<button class="si-pay-btn update"
-            onclick="event.stopPropagation(); si_addPaymentPrompt('${d.InvoiceID}', ${balance})">
-            Update Payment
-          </button>`
-        : ""
-      }
-    `
-    : `
-      <button class="si-pay-btn"
-        onclick="event.stopPropagation(); si_addPaymentPrompt('${d.InvoiceID}', ${balance})">
-        Enter Payment
-      </button>
-    `
-  }
+        isCancelled
+        ? `<div class="si-cancelled-text">Invoice Cancelled</div>`
+        : isPaid || isPartial
+        ? `
+          Paid: ₹${paid}<br>
+          Bal: ₹${balance}<br>
 
-</div>
+          ${
+            !isPaid
+            ? `<button class="si-pay-btn update"
+                onclick="event.stopPropagation(); si_addPaymentPrompt('${d.InvoiceID}', ${balance})">
+                Update Payment
+              </button>`
+            : ""
+          }
+        `
+        : `
+          <button class="si-pay-btn"
+            onclick="event.stopPropagation(); si_addPaymentPrompt('${d.InvoiceID}', ${balance})">
+            Enter Payment
+          </button>
+        `
+      }
+
+    </div>
   `;
 }
 
