@@ -264,17 +264,37 @@ async function si_searchInvoice() {
 
   try {
     const query = document.getElementById("si-searchInput").value.trim();
+
     if (!query) {
-      si_showToast("Enter mobile or vehicle number");
+      si_showToast("Enter invoice number, mobile or vehicle number");
       return;
     }
 
     const token = localStorage.getItem("access_token");
-    const res = await si_fetchJson(`https://api.sangeeth47.in/api/billing-GetInvoicesByCustomer?vehicleNo=${query}&mobileNo=${query}`, {
-      headers: {
-        "Authorization": `Bearer ${token}`
+
+    // Detect input type
+    let url = "";
+
+    if (/^\d+$/.test(query)) {
+      // Pure number → invoiceId OR mobile (decide priority)
+      if (query.length <= 6) {
+        url = `invoiceId=${query}`;
+      } else {
+        url = `mobileNo=${query}`;
       }
-    });
+    } else {
+      // Alphanumeric → vehicle
+      url = `vehicleNo=${encodeURIComponent(query)}`;
+    }
+
+    const res = await si_fetchJson(
+      `https://api.sangeeth47.in/api/billing-GetInvoicesByCustomer?${url}`,
+      {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      }
+    );
 
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}`);
@@ -338,14 +358,18 @@ function si_renderInvoices(data, options = {}) {
   const { append = false } = options;
   const container = document.getElementById("si-invoiceOptions");
 
+  // FIX: normalize to array
+  const safeData = Array.isArray(data) ? data : [data];
+
   const existing = append
     ? JSON.parse(localStorage.getItem("si_invoiceCache") || "[]")
     : [];
-  const merged = [...existing, ...data];
+
+  const merged = [...existing, ...safeData];
 
   localStorage.setItem("si_invoiceCache", JSON.stringify(merged));
 
-  const html = data.map(d => `
+  const html = safeData.map(d => `
     <div class="si-invoice-card" data-id="${d.InvoiceID}" onclick="si_selectInvoice('${d.InvoiceID}')">
       ${si_getInvoiceCardHTML(d)}
     </div>
