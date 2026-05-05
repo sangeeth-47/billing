@@ -1138,7 +1138,7 @@
   #consumablesTable td:first-child::before {
   content: "";
   display: inline-block;
-  background-image: url("assets/consumable.svg");
+  background-image: url("https://billing.sangeeth47.in/assets/consumable.svg");
   background-size: 16px 16px;
   background-repeat: no-repeat;
   width: 16px;
@@ -1149,7 +1149,7 @@
 #servicesTable td:first-child::before {
   content: "";
   display: inline-block;
-  background-image: url("assets/service.svg");
+  background-image: url("https://billing.sangeeth47.in/assets/service.svg");
   background-size: 16px 16px;
   background-repeat: no-repeat;
   width: 16px;
