@@ -1537,12 +1537,14 @@ async function loadPurchaseSection() {
       return;
     }
 
+    const previousState = capturePurchaseSelectionState();
+
     const response = await fetch(`${API_BASE}/billing-inventory-get`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const result = await response.json();
     if (response.ok) {
-      displayInventoryForPurchase(result.items);
+      displayInventoryForPurchase(result.items, previousState);
       const searchInput = document.getElementById('purchaseSearch');
       if (searchInput) searchInput.value = '';
     } else {
@@ -1552,6 +1554,33 @@ async function loadPurchaseSection() {
     console.error(err);
     showBalloon('❌ Network error while loading purchase inventory', 3000, 'error');
   }
+}
+
+function buildPurchaseItemKey(item = {}) {
+  const itemId = item.ItemID || item.itemId || '';
+  if (itemId) return String(itemId);
+
+  const itemCode = (item.ItemCode || '').trim().toLowerCase();
+  const itemName = (item.ItemName || '').trim().toLowerCase();
+  const itemPrice = String(item.Price ?? '').trim().toLowerCase();
+  return `${itemCode}|${itemName}|${itemPrice}`;
+}
+
+function capturePurchaseSelectionState() {
+  const state = new Map();
+  document.querySelectorAll('#purchaseTable tbody tr').forEach(row => {
+    const checkbox = row.querySelector('.po-select');
+    const qtyInput = row.cells[4]?.querySelector('input');
+    const itemKey = row.dataset.itemKey || checkbox?.dataset.id || '';
+
+    if (!itemKey) return;
+
+    state.set(itemKey, {
+      checked: !!checkbox?.checked,
+      qty: qtyInput?.value || '1'
+    });
+  });
+  return state;
 }
 
 // Build printable purchase order and trigger print
@@ -1626,7 +1655,7 @@ function displayInventoryItems(items) {
 }
 
 // Display inventory in Purchase Order section (with checkbox selection)
-function displayInventoryForPurchase(items) {
+function displayInventoryForPurchase(items, previousState = new Map()) {
   const tbody = document.querySelector('#purchaseTable tbody');
   if (!tbody) return;
   tbody.innerHTML = '';
@@ -1634,13 +1663,18 @@ function displayInventoryForPurchase(items) {
   items.forEach((item, index) => {
     const row = document.createElement('tr');
     const code = item.ItemCode || '';
+    const itemKey = buildPurchaseItemKey(item);
+    const previousEntry = previousState instanceof Map ? previousState.get(itemKey) : null;
+    const isChecked = previousEntry ? previousEntry.checked : false;
+    const qtyValue = previousEntry?.qty || '1';
     row.innerHTML = `
       <td>${index + 1}</td>
-      <td><input type="checkbox" class="po-select" data-id="${item.ItemID || ''}"></td>
+      <td><input type="checkbox" class="po-select" data-id="${item.ItemID || ''}" ${isChecked ? 'checked' : ''}></td>
       <td>${code}</td>
       <td>${item.ItemName}</td>
-      <td><input type="number" min="1" value="1" style="width: 70px; padding: 4px 6px;"></td>
+      <td><input type="number" min="1" value="${escapeHtml(qtyValue)}" style="width: 70px; padding: 4px 6px;"></td>
     `;
+    row.dataset.itemKey = itemKey;
     row.dataset.itemCode = code.toLowerCase();
     row.dataset.itemName = (item.ItemName || '').toLowerCase();
     tbody.appendChild(row);
