@@ -1295,6 +1295,47 @@
   transition: opacity 0.3s ease, transform 0.3s ease;
   z-index: 9999;
 }
+
+.go-bottom-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  top: auto;
+  z-index: 9998;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 5px;
+  background-color: #000000;
+  color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  display: none;
+  transition: top 0.35s ease, bottom 0.35s ease, transform 0.35s ease, opacity 0.25s ease;
+}
+
+.go-bottom-btn.go-bottom-btn-top {
+  top: 20px;
+  bottom: auto;
+}
+
+.go-bottom-btn:hover {
+  outline: 2px solid rgb(45, 45, 46);
+  outline-offset: 4px;
+}
+
+.go-bottom-btn:active {
+  transform: translateY(0);
+}
+
+@media print {
+  .go-bottom-btn {
+    display: none !important;
+  }
+}
 #qrOverlay {
   position: fixed;
   top: 0;

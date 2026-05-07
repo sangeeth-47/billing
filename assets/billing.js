@@ -804,6 +804,7 @@ function handleSuggestionSelect(input) {
   const viewInvoiceBtn = document.getElementById('viewInvoiceBtn');
   const reportsBtn = document.getElementById('reportsBtn');
   const purchaseBtn = document.getElementById('purchaseOrderBtn');
+  const goBottomBtn = document.getElementById('goToBottomBtn');
 
   // Reset all buttons to show first
   billingBtn.style.display = '';
@@ -811,6 +812,7 @@ function handleSuggestionSelect(input) {
   viewInvoiceBtn.style.display = '';
   reportsBtn.style.display = '';
   if (purchaseBtn) purchaseBtn.style.display = '';
+  if (goBottomBtn) goBottomBtn.style.display = 'none';
 
   if (id === 'billing') {
     // In billing tab: only show inventory button
@@ -830,6 +832,7 @@ function handleSuggestionSelect(input) {
     inventoryBtn.style.display = 'none';
     viewInvoiceBtn.style.display = 'none';
     if (purchaseBtn) purchaseBtn.style.display = '';
+    if (goBottomBtn) goBottomBtn.style.display = 'inline-flex';
 
     // Load inventory when inventory tab is clicked
     await loadInventoryData();
@@ -853,8 +856,11 @@ function handleSuggestionSelect(input) {
     billingBtn.style.display = 'none';
     viewInvoiceBtn.style.display = 'none';
     reportsBtn.style.display = 'none';
+    if (goBottomBtn) goBottomBtn.style.display = 'inline-flex';
     await loadPurchaseSection();
   }
+
+  updateGoBottomButtonState();
 }
 
     function formatDecimal(el) {
@@ -1606,7 +1612,7 @@ function openPurchaseOrderPrint() {
     const tr = cb.closest('tr');
     const code = tr.cells[2].textContent.trim();
     const name = tr.cells[3].textContent.trim();
-    const qtyInput = tr.cells[4].querySelector('input');
+    const qtyInput = tr.cells[5].querySelector('input');
     const qty = parseInt(qtyInput?.value, 10) || 1;
     return { code, name, qty };
   });
@@ -1628,6 +1634,57 @@ function openPurchaseOrderPrint() {
   w.document.write(html);
   w.document.close();
 }
+
+function goToBottom() {
+  if (isAtPageBottom()) {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    return;
+  }
+
+  const target = Math.max(
+    document.body.scrollHeight,
+    document.documentElement.scrollHeight,
+    document.body.offsetHeight,
+    document.documentElement.offsetHeight,
+    document.body.clientHeight,
+    document.documentElement.clientHeight
+  );
+
+  window.scrollTo({
+    top: target,
+    behavior: 'smooth'
+  });
+}
+
+function isAtPageBottom() {
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+  const pageHeight = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+  return scrollTop + viewportHeight >= pageHeight - 8;
+}
+
+function updateGoBottomButtonState() {
+  const button = document.getElementById('goToBottomBtn');
+  if (!button) return;
+
+  const visibleSection = document.querySelector('.section.active')?.id;
+  const shouldShow = visibleSection === 'inventory' || visibleSection === 'purchase';
+  button.style.display = shouldShow ? 'inline-flex' : 'none';
+  const atBottom = isAtPageBottom();
+  button.textContent = atBottom ? 'Go Top' : 'Go Bottom';
+  button.classList.toggle('go-bottom-btn-top', atBottom);
+}
+
+window.addEventListener('scroll', () => {
+  updateGoBottomButtonState();
+}, { passive: true });
+
+window.addEventListener('resize', () => {
+  updateGoBottomButtonState();
+});
 
 function displayInventoryItems(items) {
   const tbody = document.querySelector('#inventoryTable tbody');
@@ -1667,11 +1724,13 @@ function displayInventoryForPurchase(items, previousState = new Map()) {
     const previousEntry = previousState instanceof Map ? previousState.get(itemKey) : null;
     const isChecked = previousEntry ? previousEntry.checked : false;
     const qtyValue = previousEntry?.qty || '1';
+    const priceText = formatPurchasePrice(item.Price);
     row.innerHTML = `
       <td>${index + 1}</td>
       <td><input type="checkbox" class="po-select" data-id="${item.ItemID || ''}" ${isChecked ? 'checked' : ''}></td>
       <td>${code}</td>
       <td>${item.ItemName}</td>
+      <td><span class="purchase-item-price">${escapeHtml(priceText)}</span></td>
       <td><input type="number" min="1" value="${escapeHtml(qtyValue)}" style="width: 70px; padding: 4px 6px;"></td>
     `;
     row.dataset.itemKey = itemKey;
@@ -1679,6 +1738,12 @@ function displayInventoryForPurchase(items, previousState = new Map()) {
     row.dataset.itemName = (item.ItemName || '').toLowerCase();
     tbody.appendChild(row);
   });
+}
+
+function formatPurchasePrice(price) {
+  const numericPrice = parseFloat(price);
+  if (Number.isNaN(numericPrice)) return '';
+  return `₹${numericPrice.toFixed(2)}`;
 }
 
 function filterPurchaseItems() {
