@@ -1627,12 +1627,54 @@ function openPurchaseOrderPrint() {
   items.forEach((it, index) => { totalQty += it.qty; html += `<tr><td>${index + 1}</td><td>${it.code}</td><td>${it.name}</td><td>${it.qty}</td></tr>`; });
   html += `</tbody></table>`;
   html += `<div class="po-summary"><div class="po-summary-box">Total Qty: ${totalQty}</div></div>`;
-  html += `<script>window.onload=function(){window.print(); setTimeout(()=>window.close(),100);}</script>`;
   html += `</body></html>`;
 
-  const w = window.open('', '_blank');
-  w.document.write(html);
-  w.document.close();
+  const existingFrame = document.getElementById('purchaseOrderPrintFrame');
+  if (existingFrame) existingFrame.remove();
+
+  const iframe = document.createElement('iframe');
+  iframe.id = 'purchaseOrderPrintFrame';
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '1px';
+  iframe.style.height = '1px';
+  iframe.style.border = '0';
+  iframe.style.opacity = '0';
+  iframe.style.pointerEvents = 'none';
+
+  let printTriggered = false;
+  iframe.onload = () => {
+    if (printTriggered) return;
+    try {
+      const frameWindow = iframe.contentWindow;
+      if (!frameWindow) return;
+      printTriggered = true;
+      window.setTimeout(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            frameWindow.focus();
+            frameWindow.print();
+          });
+        });
+      }, 50);
+    } catch (error) {
+      console.error('Purchase order print failed:', error);
+      showBalloon('❌ Unable to open print dialog on this device', 3000, 'error');
+    } finally {
+      window.setTimeout(() => iframe.remove(), 1000);
+    }
+  };
+
+  document.body.appendChild(iframe);
+  const doc = iframe.contentWindow?.document;
+  if (!doc) {
+    iframe.remove();
+    showBalloon('❌ Unable to prepare print view', 3000, 'error');
+    return;
+  }
+
+  iframe.srcdoc = html;
 }
 
 function goToBottom() {
