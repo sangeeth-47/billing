@@ -1773,7 +1773,7 @@ function displayInventoryForPurchase(items, previousState = new Map()) {
       <td>${code}</td>
       <td>${item.ItemName}</td>
       <td><span class="purchase-item-price">${escapeHtml(priceText)}</span></td>
-      <td><input type="number" min="1" value="${escapeHtml(qtyValue)}" style="width: 70px; padding: 4px 6px;"></td>
+      <td><input type="number" min="1" value="${escapeHtml(qtyValue)}" style="width: 70px; padding: 4px 6px;" oninput="autoSelectPurchaseItem(this)" onchange="autoSelectPurchaseItem(this)"></td>
     `;
     row.dataset.itemKey = itemKey;
     row.dataset.itemCode = code.toLowerCase();
@@ -1786,6 +1786,19 @@ function formatPurchasePrice(price) {
   const numericPrice = parseFloat(price);
   if (Number.isNaN(numericPrice)) return '';
   return `₹${numericPrice.toFixed(2)}`;
+}
+
+function autoSelectPurchaseItem(qtyInput) {
+  const row = qtyInput.closest('tr');
+  if (!row) return;
+
+  const checkbox = row.querySelector('.po-select');
+  if (!checkbox) return;
+
+  const quantity = parseFloat(qtyInput.value);
+  if (!Number.isNaN(quantity) && quantity !== 1) {
+    checkbox.checked = true;
+  }
 }
 
 function filterPurchaseItems() {
