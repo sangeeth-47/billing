@@ -410,6 +410,7 @@
   <nav>
     <button id="billingBtn" onclick="showSection('billing')">Billing</button>
     <button id="inventoryBtn" onclick="showSection('inventory')">Inventory</button>
+    <button id="purchaseOrderBtn" onclick="showSection('purchase')">Purchase Order</button>
     <button id="viewInvoiceBtn" onclick="loadSearchInvoice()">View Invoices</button>
     <button id="reportsBtn" onclick="showSection('reports')">Reports</button>
   </nav>
@@ -535,6 +536,7 @@
         <div id="itemInputs">
           <div class="item-input-row">
             <input type="text" id="itemName_1" placeholder="Item Name" class="item-name-input" oninput="clearErrorStyling(this)">
+            <input type="text" id="itemCode_1" placeholder="Item Code" class="item-code-input" oninput="clearErrorStyling(this)">
             <input type="number" id="itemPrice_1" placeholder="Price" step="0.01" min="0" class="item-price-input" oninput="clearErrorStyling(this)">
             <button type="button" onclick="addItemInputRow()" class="add-item-btn">+</button>
             <button type="button" onclick="removeItemInputRow(this)" class="remove-item-btn" style="display: none;">-</button>
@@ -558,6 +560,8 @@
         <table id="inventoryTable" class="inventory-table">
           <thead>
             <tr>
+              <th>#</th>
+              <th>Item Code</th>
               <th>Item Name</th>
               <th>Price</th>
               <th>Used in Bills</th>
@@ -568,6 +572,34 @@
             <!-- Inventory items will be loaded here -->
           </tbody>
         </table>
+      </div>
+    </div>
+  </section>
+  <section id="purchase" class="section">
+    <button id="closePurchaseBtn" class="close-btn" onclick="showSection('dashboard')">×</button>
+    <h2>Purchase Order</h2>
+    <div class="purchase-container" style="max-width: 900px; margin: 0 auto; padding: 20px;">
+      <p style="text-align: center; color: #666; margin-bottom: 20px;">Select inventory items to include in the purchase order.</p>
+      <div style="display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap; margin-bottom:16px;">
+        <input type="text" id="purchaseSearch" placeholder="Search by item name or item code" oninput="filterPurchaseItems()" style="min-width:280px; padding:10px 12px; border:1px solid #ccc; border-radius:6px;">
+        <button type="button" class="print-btn" onclick="toggleVisiblePurchaseItems()">Select All / Deselect All</button>
+      </div>
+      <table id="purchaseTable" class="inventory-table" style="width: 100%;">
+        <thead>
+          <tr>
+            <th style="width: 50px; text-align: center;">#</th>
+            <th style="width: 50px; text-align: center;"></th>
+            <th>Item Code</th>
+            <th>Item Name</th>
+            <th>Qty</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: center;">
+        <button onclick="openPurchaseOrderPrint()" class="print-btn">Print Purchase Order</button>
+        <button onclick="loadPurchaseSection()" class="print-btn">Refresh</button>
       </div>
     </div>
   </section>

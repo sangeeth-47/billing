@@ -39,6 +39,7 @@
   .section {
     display: none;
     padding: 2rem;
+    position: relative;
   }
 
   .section.active {
@@ -540,13 +541,21 @@
 
   .item-input-row {
     display: grid;
-    grid-template-columns: 2fr 1fr 40px 40px;
+    grid-template-columns: 2fr 1fr 1fr 40px 40px;
     gap: 10px;
     margin-bottom: 10px;
     align-items: center;
   }
 
   .item-name-input {
+    padding: 8px 12px;
+    border: 2px solid #000;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+  }
+
+  .item-code-input {
     padding: 8px 12px;
     border: 2px solid #000;
     border-radius: 4px;
@@ -738,6 +747,19 @@
     cursor: not-allowed;
   }
 
+  /* Purchase Order Table - narrow checkbox column */
+  #purchaseTable thead tr th:first-child,
+  #purchaseTable tbody tr td:first-child {
+    width: 50px;
+    text-align: center;
+  }
+
+  .po-select {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+  }
+
   .warning-dialog {
     position: fixed;
     top: 0;
@@ -787,6 +809,347 @@
   .warning-cancel {
     background-color: #ccc;
     color: black;
+  }
+
+  .purchase-deselect-dialog {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 18, 32, 0.72);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 11000;
+    padding: 20px;
+  }
+
+  .purchase-deselect-card {
+    display: flex;
+    flex-direction: column;
+    width: min(620px, 100%);
+    height: min(78vh, 720px);
+    overflow: hidden;
+    background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+    border: 1px solid rgba(27, 47, 80, 0.12);
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+    padding: 22px 22px 18px;
+  }
+
+  .purchase-deselect-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-top: 4px;
+  }
+
+  .purchase-deselect-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.1);
+    color: #0f766e;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .purchase-deselect-card h3 {
+    margin: 14px 0 10px;
+    color: #10233d;
+    font-size: 22px;
+  }
+
+  .purchase-deselect-message {
+    margin: 0 0 16px;
+    color: #4a5568;
+    line-height: 1.5;
+  }
+
+  .purchase-deselect-list {
+    min-height: 0;
+    padding: 6px;
+    border-radius: 14px;
+    background: #f3f7ff;
+    border: 1px solid rgba(16, 35, 61, 0.08);
+  }
+
+  .purchase-deselect-section {
+    margin-top: 14px;
+  }
+
+  .purchase-deselect-section-title {
+    margin: 0 0 8px;
+    color: #10233d;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .purchase-deselect-empty {
+    padding: 12px;
+    color: #64748b;
+    font-style: italic;
+  }
+
+  .purchase-deselect-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 1px 0 rgba(16, 35, 61, 0.04);
+  }
+
+  .purchase-deselect-checkbox {
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    accent-color: #0f766e;
+    flex-shrink: 0;
+  }
+
+  .purchase-deselect-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .purchase-deselect-index {
+    min-width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0f766e;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .purchase-deselect-text {
+    color: #10233d;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+
+  .purchase-deselect-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(16, 35, 61, 0.08);
+    background: linear-gradient(180deg, rgba(247, 250, 255, 0.4), rgba(247, 250, 255, 0.95));
+  }
+
+  .purchase-deselect-actions-top {
+    margin-bottom: 16px;
+  }
+
+  .purchase-deselect-actions button {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  }
+
+  .purchase-deselect-actions button:hover {
+    transform: translateY(-1px);
+  }
+
+  .purchase-deselect-cancel {
+    background: #e5ecf7;
+    color: #243b53;
+  }
+
+  .purchase-deselect-confirm {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(185, 28, 28, 0.25);
+  }
+
+  .inventory-save-summary-dialog {
+    position: fixed;
+    inset: 0;
+    background: rgba(11, 18, 32, 0.72);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 12000;
+    padding: 20px;
+  }
+
+  .inventory-save-summary-card {
+    width: min(700px, 100%);
+    max-height: min(82vh, 760px);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #ffffff 0%, #f7faff 100%);
+    border: 1px solid rgba(27, 47, 80, 0.12);
+    border-radius: 18px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+    padding: 22px;
+  }
+
+  .inventory-save-summary-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(15, 118, 110, 0.1);
+    color: #0f766e;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .inventory-save-summary-card h3 {
+    margin: 14px 0 12px;
+    color: #10233d;
+    font-size: 22px;
+  }
+
+  .inventory-save-summary-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+
+  .inventory-save-summary-stat {
+    border-radius: 14px;
+    padding: 14px 16px;
+    background: #ffffff;
+    border: 1px solid rgba(16, 35, 61, 0.08);
+    box-shadow: 0 1px 0 rgba(16, 35, 61, 0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .inventory-save-summary-stat.success {
+    border-color: rgba(15, 118, 110, 0.22);
+  }
+
+  .inventory-save-summary-stat.warning {
+    border-color: rgba(185, 28, 28, 0.18);
+  }
+
+  .inventory-save-summary-stat .label {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #64748b;
+  }
+
+  .inventory-save-summary-stat .value {
+    font-size: 30px;
+    font-weight: 800;
+    color: #10233d;
+    line-height: 1;
+  }
+
+  .inventory-save-summary-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  .inventory-save-summary-section {
+    margin-top: 14px;
+  }
+
+  .inventory-save-summary-section-title {
+    margin: 0 0 8px;
+    color: #10233d;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .inventory-save-summary-list {
+    padding: 6px;
+    border-radius: 14px;
+    background: #f3f7ff;
+    border: 1px solid rgba(16, 35, 61, 0.08);
+  }
+
+  .inventory-save-summary-empty {
+    padding: 12px;
+    color: #64748b;
+    font-style: italic;
+  }
+
+  .inventory-summary-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 1px 0 rgba(16, 35, 61, 0.04);
+  }
+
+  .inventory-summary-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .inventory-summary-index {
+    min-width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #0f766e;
+    color: #fff;
+    font-weight: 700;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+
+  .inventory-summary-text {
+    color: #10233d;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+
+  .inventory-save-summary-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(16, 35, 61, 0.08);
+  }
+
+  .inventory-save-summary-close {
+    border: none;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-weight: 700;
+    cursor: pointer;
+    background: linear-gradient(135deg, #0f766e, #115e59);
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(15, 118, 110, 0.22);
   }
 
   .bill-info {

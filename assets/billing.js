@@ -610,10 +610,12 @@ window.addEventListener("DOMContentLoaded", () => {
       const datalist = document.getElementById('itemSuggestions');
       datalist.innerHTML = '';
 
-      data.forEach(({ ItemName, Price }) => {
+      data.forEach(({ ItemCode, ItemName, Price }) => {
         const option = document.createElement('option');
-        option.value = `${ItemName} - ₹${Price}`;
+        const codeLabel = ItemCode ? `[${ItemCode}] ` : '';
+        option.value = `${codeLabel}${ItemName} - ₹${Price}`;
         option.dataset.name = ItemName;
+        option.dataset.code = ItemCode || '';
         option.dataset.price = Price;
         datalist.appendChild(option);
       });
@@ -801,17 +803,20 @@ function handleSuggestionSelect(input) {
   const inventoryBtn = document.getElementById('inventoryBtn');
   const viewInvoiceBtn = document.getElementById('viewInvoiceBtn');
   const reportsBtn = document.getElementById('reportsBtn');
+  const purchaseBtn = document.getElementById('purchaseOrderBtn');
 
   // Reset all buttons to show first
   billingBtn.style.display = '';
   inventoryBtn.style.display = '';
   viewInvoiceBtn.style.display = '';
   reportsBtn.style.display = '';
+  if (purchaseBtn) purchaseBtn.style.display = '';
 
   if (id === 'billing') {
     // In billing tab: only show inventory button
     billingBtn.style.display = 'none';
     viewInvoiceBtn.style.display = 'none';
+    if (purchaseBtn) purchaseBtn.style.display = 'none';
 
     await loadItemSuggestions();
 
@@ -824,11 +829,13 @@ function handleSuggestionSelect(input) {
     // In inventory tab: only show billing button
     inventoryBtn.style.display = 'none';
     viewInvoiceBtn.style.display = 'none';
+    if (purchaseBtn) purchaseBtn.style.display = '';
 
     // Load inventory when inventory tab is clicked
     await loadInventoryData();
   } else if (id === 'reports') {
     reportsBtn.style.display = 'none';
+    if (purchaseBtn) purchaseBtn.style.display = 'none';
 
     if (typeof loadReportDashboard === 'function') {
       await loadReportDashboard(false);
@@ -837,6 +844,16 @@ function handleSuggestionSelect(input) {
     // In home/dashboard: show all tabs
     // selectedInvoice persists unless explicitly cleared by reloadForNewBill or new invoice selection
     // All buttons are already visible from reset above
+  }
+
+  // Load Purchase Order inventory when purchase tab is selected
+  if (id === 'purchase') {
+    if (purchaseBtn) purchaseBtn.style.display = '';
+    inventoryBtn.style.display = '';
+    billingBtn.style.display = 'none';
+    viewInvoiceBtn.style.display = 'none';
+    reportsBtn.style.display = 'none';
+    await loadPurchaseSection();
   }
 }
 
@@ -1287,6 +1304,7 @@ function addItemInputRow() {
   newRow.className = 'item-input-row';
   newRow.innerHTML = `
     <input type="text" id="itemName_${inventoryItemCounter}" placeholder="Item Name" class="item-name-input" oninput="clearErrorStyling(this)">
+    <input type="text" id="itemCode_${inventoryItemCounter}" placeholder="Item Code" class="item-code-input" oninput="clearErrorStyling(this)">
     <input type="number" id="itemPrice_${inventoryItemCounter}" placeholder="Price" step="0.01" min="0" class="item-price-input" oninput="clearErrorStyling(this)">
     <button type="button" onclick="addItemInputRow()" class="add-item-btn">+</button>
     <button type="button" onclick="removeItemInputRow(this)" class="remove-item-btn">-</button>
@@ -1345,10 +1363,12 @@ async function saveInventoryItems() {
     const priceInput = row.querySelector('.item-price-input');
     
     const name = nameInput.value.trim();
+    const codeInput = row.querySelector('.item-code-input');
+    const code = codeInput ? codeInput.value.trim() : null;
     const price = parseFloat(priceInput.value);
     
     if (name && !isNaN(price) && price >= 0) {
-      items.push({ name, price });
+      items.push({ name, price, code });
       
       // Clear the inputs after collecting
       nameInput.value = '';
@@ -1385,21 +1405,13 @@ async function saveInventoryItems() {
     document.getElementById('inventory-spinner').style.display = 'none'; // Hide spinner after saving
 
     if (response.ok) {
-      // Handle API response
-      if (result.addedCount > 0 && result.duplicateCount > 0) {
-        showBalloon(`✅ ${result.addedCount} item(s) added successfully! ${result.duplicateCount} duplicate(s) skipped.`, 4000, 'success');
-      } else if (result.addedCount > 0) {
-        showBalloon(`✅ ${result.addedCount} item(s) added to inventory successfully!`, 3000, 'success');
-      } else if (result.duplicateCount > 0) {
-        showBalloon(`⚠️ All ${result.duplicateCount} item(s) already exist in inventory. No new items added.`, 4000, 'error');
-      } else {
-        showBalloon(`✅ ${result.message || 'Operation completed'}`, 3000, 'success');
-      }
+      showInventorySaveSummary(result);
       
       // Reset input rows
       document.getElementById('itemInputs').innerHTML = `
         <div class="item-input-row">
           <input type="text" id="itemName_1" placeholder="Item Name" class="item-name-input" oninput="clearErrorStyling(this)">
+          <input type="text" id="itemCode_1" placeholder="Item Code" class="item-code-input" oninput="clearErrorStyling(this)">
           <input type="number" id="itemPrice_1" placeholder="Price" step="0.01" min="0" class="item-price-input" oninput="clearErrorStyling(this)">
           <button type="button" onclick="addItemInputRow()" class="add-item-btn">+</button>
           <button type="button" onclick="removeItemInputRow(this)" class="remove-item-btn" style="display: none;">-</button>
@@ -1417,6 +1429,75 @@ async function saveInventoryItems() {
     showBalloon('❌ Network error. Please try again.', 3000, 'error');
     document.getElementById('inventory-spinner').style.display = 'none'; // ensure hidden on error
   }
+}
+
+function showInventorySaveSummary(result) {
+  const oldDialog = document.querySelector('.inventory-save-summary-dialog');
+  if (oldDialog) oldDialog.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'inventory-save-summary-dialog';
+
+  const duplicateItems = Array.isArray(result.duplicateItems) ? result.duplicateItems : [];
+  const addedItems = Array.isArray(result.addedItems) ? result.addedItems : [];
+
+  function formatItemPrice(price) {
+    const numericPrice = parseFloat(price);
+    if (Number.isNaN(numericPrice)) return '';
+    return `₹${numericPrice.toFixed(2)}`;
+  }
+
+  const duplicateList = duplicateItems.map((item, index) => {
+    const code = item.code ? `[${escapeHtml(item.code)}] ` : '';
+    const price = formatItemPrice(item.price);
+    return `<div class="inventory-summary-item"><span class="inventory-summary-index">${index + 1}</span><span class="inventory-summary-text">${code}${escapeHtml(item.name || '')}${price ? ` <span class="inventory-summary-price">(${escapeHtml(price)})</span>` : ''}</span></div>`;
+  }).join('');
+
+  overlay.innerHTML = `
+    <div class="inventory-save-summary-card" role="dialog" aria-modal="true" aria-labelledby="inventorySaveSummaryTitle">
+      <div class="inventory-save-summary-badge">Save complete</div>
+      <h3 id="inventorySaveSummaryTitle">Inventory save summary</h3>
+      <div class="inventory-save-summary-stats">
+        <div class="inventory-save-summary-stat success">
+          <span class="label">Added</span>
+          <span class="value">${result.addedCount || 0}</span>
+        </div>
+        <div class="inventory-save-summary-stat warning">
+          <span class="label">Duplicate</span>
+          <span class="value">${result.duplicateCount || 0}</span>
+        </div>
+      </div>
+      <div class="inventory-save-summary-body">
+        <div class="inventory-save-summary-section">
+          <div class="inventory-save-summary-section-title">Added items</div>
+          <div class="inventory-save-summary-list">
+            ${(addedItems.length ? addedItems.map((item, index) => {
+              const code = item.code ? `<strong>[${escapeHtml(item.code)}]</strong> ` : '';
+              const price = formatItemPrice(item.price);
+              return `<div class="inventory-summary-item"><span class="inventory-summary-index">${index + 1}</span><span class="inventory-summary-text">${code}${escapeHtml(item.name || '')}${price ? ` <span class="inventory-summary-price">(${escapeHtml(price)})</span>` : ''}</span></div>`;
+            }).join('') : '<div class="inventory-save-summary-empty">No items added.</div>')}
+          </div>
+        </div>
+        <div class="inventory-save-summary-section">
+          <div class="inventory-save-summary-section-title">Duplicate items</div>
+          <div class="inventory-save-summary-list">
+            ${duplicateList || '<div class="inventory-save-summary-empty">No duplicate items found.</div>'}
+          </div>
+        </div>
+      </div>
+      <div class="inventory-save-summary-actions">
+        <button type="button" class="inventory-save-summary-close">Close</button>
+      </div>
+    </div>
+  `;
+
+  const closeDialog = () => overlay.remove();
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeDialog();
+  });
+  overlay.querySelector('.inventory-save-summary-close')?.addEventListener('click', closeDialog);
+
+  document.body.appendChild(overlay);
 }
 
 
@@ -1447,18 +1528,93 @@ async function loadInventoryData() {
   }
 }
 
+// Load inventory for Purchase Order section
+async function loadPurchaseSection() {
+  try {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      showBalloon('❌ Authentication required. Please login first.', 3000, 'error');
+      return;
+    }
+
+    const response = await fetch(`${API_BASE}/billing-inventory-get`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const result = await response.json();
+    if (response.ok) {
+      displayInventoryForPurchase(result.items);
+      const searchInput = document.getElementById('purchaseSearch');
+      if (searchInput) searchInput.value = '';
+    } else {
+      showBalloon('❌ Failed to load inventory for purchase', 3000, 'error');
+    }
+  } catch (err) {
+    console.error(err);
+    showBalloon('❌ Network error while loading purchase inventory', 3000, 'error');
+  }
+}
+
+// Build printable purchase order and trigger print
+function openPurchaseOrderPrint() {
+  const checked = Array.from(document.querySelectorAll('#purchaseTable tbody .po-select:checked'));
+  if (checked.length === 0) {
+    showBalloon('❌ Select at least one item to create purchase order', 3000, 'error');
+    return;
+  }
+
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = now.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+  const year = now.getFullYear();
+  const time = now.toLocaleString('en-IN', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+  const dateTimeText = `${day}/${month}/${year} ${time}`;
+
+  const items = checked.map(cb => {
+    const tr = cb.closest('tr');
+    const code = tr.cells[2].textContent.trim();
+    const name = tr.cells[3].textContent.trim();
+    const qtyInput = tr.cells[4].querySelector('input');
+    const qty = parseInt(qtyInput?.value, 10) || 1;
+    return { code, name, qty };
+  });
+
+  // Build simple printable HTML
+  let html = `<html><head><title>Purchase Order</title>`;
+  html += `<style>body{font-family: Arial, sans-serif;padding:24px;color:#222} .po-header{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:18px} .po-title{font-size:24px;font-weight:700;letter-spacing:1px} .po-datetime{font-size:13px;color:#555} table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f4f4f4} .po-summary{margin-top:16px;display:flex;justify-content:flex-end;font-weight:700;break-inside:avoid;page-break-inside:avoid} .po-summary-box{min-width:220px;padding:10px 14px;border:1px solid #ddd;border-radius:8px;background:#fafafa}</style>`;
+  html += `</head><body>`;
+  html += `<div class="po-header"><div class="po-title">REBORN PURCHASE ORDER</div><div class="po-datetime">Date &amp; Time: ${dateTimeText}</div></div>`;
+  html += `<table><thead><tr><th>#</th><th>Item Code</th><th>Item Name</th><th>Qty</th></tr></thead><tbody>`;
+  let totalQty = 0;
+  items.forEach((it, index) => { totalQty += it.qty; html += `<tr><td>${index + 1}</td><td>${it.code}</td><td>${it.name}</td><td>${it.qty}</td></tr>`; });
+  html += `</tbody></table>`;
+  html += `<div class="po-summary"><div class="po-summary-box">Total Qty: ${totalQty}</div></div>`;
+  html += `<script>window.onload=function(){window.print(); setTimeout(()=>window.close(),100);}</script>`;
+  html += `</body></html>`;
+
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+}
+
 function displayInventoryItems(items) {
   const tbody = document.querySelector('#inventoryTable tbody');
   tbody.innerHTML = '';
   
-  items.forEach(item => {
+  items.forEach((item, index) => {
     const row = document.createElement('tr');
+    const itemCode = item.ItemCode || '';
     row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${itemCode}</td>
       <td>${item.ItemName}</td>
       <td>₹${parseFloat(item.Price).toFixed(2)}</td>
       <td>${item.UsedInBills || 0}</td>
       <td>
-        <button onclick="deleteInventoryItem('${item.ItemName}', ${item.Price}, ${item.UsedInBills || 0})" 
+        <button onclick="deleteInventoryItem('${item.ItemName.replace(/'/g,"\\'")}', ${item.Price}, ${item.UsedInBills || 0})" 
                 class="inventory-delete-btn" 
                 ${(item.UsedInBills > 0) ? 'title="Item used in bills - click for details"' : ''}>
           Delete
@@ -1467,6 +1623,219 @@ function displayInventoryItems(items) {
     `;
     tbody.appendChild(row);
   });
+}
+
+// Display inventory in Purchase Order section (with checkbox selection)
+function displayInventoryForPurchase(items) {
+  const tbody = document.querySelector('#purchaseTable tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  items.forEach((item, index) => {
+    const row = document.createElement('tr');
+    const code = item.ItemCode || '';
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td><input type="checkbox" class="po-select" data-id="${item.ItemID || ''}"></td>
+      <td>${code}</td>
+      <td>${item.ItemName}</td>
+      <td><input type="number" min="1" value="1" style="width: 70px; padding: 4px 6px;"></td>
+    `;
+    row.dataset.itemCode = code.toLowerCase();
+    row.dataset.itemName = (item.ItemName || '').toLowerCase();
+    tbody.appendChild(row);
+  });
+}
+
+function filterPurchaseItems() {
+  const searchValue = document.getElementById('purchaseSearch')?.value.trim().toLowerCase() || '';
+  const rows = document.querySelectorAll('#purchaseTable tbody tr');
+
+  rows.forEach(row => {
+    const itemCode = row.dataset.itemCode || '';
+    const itemName = row.dataset.itemName || '';
+    const matches = !searchValue || itemCode.includes(searchValue) || itemName.includes(searchValue);
+    row.style.display = matches ? '' : 'none';
+  });
+}
+
+function selectVisiblePurchaseItems() {
+  const rows = document.querySelectorAll('#purchaseTable tbody tr');
+
+  rows.forEach(row => {
+    if (row.style.display !== 'none') {
+      const checkbox = row.querySelector('.po-select');
+      if (checkbox) checkbox.checked = true;
+    }
+  });
+}
+
+function toggleVisiblePurchaseItems() {
+  const rows = Array.from(document.querySelectorAll('#purchaseTable tbody tr'));
+  const visibleRows = rows.filter(row => row.style.display !== 'none');
+  if (visibleRows.length === 0) return;
+
+  const visibleCheckboxes = visibleRows.map(row => row.querySelector('.po-select')).filter(Boolean);
+  const checkedCount = visibleCheckboxes.filter(checkbox => checkbox.checked).length;
+  const allVisibleChecked = checkedCount === visibleCheckboxes.length;
+  const someVisibleChecked = checkedCount > 0;
+
+  if (allVisibleChecked) {
+    showPurchaseDeselectDialog(visibleRows);
+    return;
+  }
+
+  if (someVisibleChecked) {
+    showPurchaseSelectAllDialog(visibleRows);
+    return;
+  }
+
+  visibleRows.forEach(row => {
+    const checkbox = row.querySelector('.po-select');
+    if (checkbox) checkbox.checked = !allVisibleChecked;
+  });
+}
+
+function showPurchaseSelectAllDialog(visibleRows) {
+  const oldDialog = document.querySelector('.purchase-deselect-dialog');
+  if (oldDialog) oldDialog.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'purchase-deselect-dialog';
+
+  const selectedItems = [];
+  const newItems = [];
+
+  visibleRows.forEach((row, index) => {
+    const code = row.cells[2]?.textContent.trim() || '';
+    const name = row.cells[3]?.textContent.trim() || '';
+    const label = `${code ? `[${escapeHtml(code)}] ` : ''}${escapeHtml(name)}`;
+    const checkbox = row.querySelector('.po-select');
+    const itemHtml = `
+      <div class="purchase-deselect-item">
+        <span class="purchase-deselect-index">${index + 1}</span>
+        <span class="purchase-deselect-text">${label}</span>
+      </div>
+    `;
+
+    if (checkbox?.checked) {
+      selectedItems.push(itemHtml);
+    } else {
+      newItems.push(itemHtml);
+    }
+  });
+
+  overlay.innerHTML = `
+    <div class="purchase-deselect-card" role="dialog" aria-modal="true" aria-labelledby="purchaseSelectAllTitle">
+      <div class="purchase-deselect-badge">Confirm add</div>
+      <h3 id="purchaseSelectAllTitle">Add the remaining visible items?</h3>
+      <p class="purchase-deselect-message">Some items in the filtered list are already selected. Do you want to add the new visible items along with the existing selected items?</p>
+      <div class="purchase-deselect-actions purchase-deselect-actions-top">
+        <button type="button" class="purchase-deselect-cancel">Cancel</button>
+        <button type="button" class="purchase-deselect-confirm">Add Visible Items</button>
+      </div>
+      <div class="purchase-deselect-body">
+        <div class="purchase-deselect-section">
+          <div class="purchase-deselect-section-title">Already selected in this filtered list</div>
+          <div class="purchase-deselect-list">
+            ${selectedItems.join('') || '<div class="purchase-deselect-empty">No visible items are currently selected.</div>'}
+          </div>
+        </div>
+        <div class="purchase-deselect-section">
+          <div class="purchase-deselect-section-title">New items to add</div>
+          <div class="purchase-deselect-list">
+            ${newItems.join('') || '<div class="purchase-deselect-empty">No new visible items to add.</div>'}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  const closeDialog = () => overlay.remove();
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeDialog();
+  });
+
+  overlay.querySelector('.purchase-deselect-cancel')?.addEventListener('click', closeDialog);
+  overlay.querySelector('.purchase-deselect-confirm')?.addEventListener('click', () => {
+    visibleRows.forEach(row => {
+      const checkbox = row.querySelector('.po-select');
+      if (checkbox) checkbox.checked = true;
+    });
+    closeDialog();
+  });
+
+  document.body.appendChild(overlay);
+}
+
+function showPurchaseDeselectDialog(visibleRows) {
+  const oldDialog = document.querySelector('.purchase-deselect-dialog');
+  if (oldDialog) oldDialog.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'purchase-deselect-dialog';
+
+  const listItems = visibleRows.map((row, index) => {
+    const code = row.cells[2]?.textContent.trim() || '';
+    const name = row.cells[3]?.textContent.trim() || '';
+    const checkboxId = `purchase-deselect-${index}`;
+    return `
+      <label class="purchase-deselect-item" for="${checkboxId}">
+        <span class="purchase-deselect-index">${index + 1}</span>
+        <input id="${checkboxId}" type="checkbox" class="purchase-deselect-checkbox" data-row-index="${index}" checked>
+        <span class="purchase-deselect-text">${code ? `<strong>[${escapeHtml(code)}]</strong> ` : ''}${escapeHtml(name)}</span>
+      </label>
+    `;
+  }).join('');
+
+  overlay.innerHTML = `
+    <div class="purchase-deselect-card" role="dialog" aria-modal="true" aria-labelledby="purchaseDeselectTitle">
+      <div class="purchase-deselect-badge">Confirm action</div>
+      <h3 id="purchaseDeselectTitle">Choose items to deselect</h3>
+      <p class="purchase-deselect-message">Uncheck any items you want to keep selected. The checked items below will be deselected when you confirm.</p>
+      <div class="purchase-deselect-body">
+        <div class="purchase-deselect-list">
+          ${listItems}
+        </div>
+      </div>
+      <div class="purchase-deselect-actions">
+        <button type="button" class="purchase-deselect-cancel">Cancel</button>
+        <button type="button" class="purchase-deselect-confirm">Deselect Selected</button>
+      </div>
+    </div>
+  `;
+
+  const closeDialog = () => overlay.remove();
+
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeDialog();
+  });
+
+  overlay.querySelector('.purchase-deselect-cancel')?.addEventListener('click', closeDialog);
+  overlay.querySelector('.purchase-deselect-confirm')?.addEventListener('click', () => {
+    const selectedCheckboxes = Array.from(overlay.querySelectorAll('.purchase-deselect-checkbox:checked'));
+    const deselectedIndices = new Set(selectedCheckboxes.map(cb => Number(cb.dataset.rowIndex)));
+
+    visibleRows.forEach((row, index) => {
+      if (deselectedIndices.has(index)) {
+        const checkbox = row.querySelector('.po-select');
+        if (checkbox) checkbox.checked = false;
+      }
+    });
+    closeDialog();
+  });
+
+  document.body.appendChild(overlay);
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 async function deleteInventoryItem(itemName, price, usedInBills) {
@@ -1550,12 +1919,13 @@ function showWarningDialog(title, message, onConfirm) {
 function filterInventory() {
   const searchTerm = document.getElementById('inventorySearch').value.toLowerCase();
   const rows = document.querySelectorAll('#inventoryTable tbody tr');
-  
+
   rows.forEach(row => {
-    const itemName = row.cells[0].textContent.toLowerCase();
-    const price = row.cells[1].textContent.toLowerCase();
-    
-    if (itemName.includes(searchTerm) || price.includes(searchTerm)) {
+    const itemCode = (row.cells[0]?.textContent || '').toLowerCase();
+    const itemName = (row.cells[1]?.textContent || '').toLowerCase();
+    const price = (row.cells[2]?.textContent || '').toLowerCase();
+
+    if (itemCode.includes(searchTerm) || itemName.includes(searchTerm) || price.includes(searchTerm)) {
       row.style.display = '';
     } else {
       row.style.display = 'none';
