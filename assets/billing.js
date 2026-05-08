@@ -1732,7 +1732,9 @@ function displayInventoryItems(items) {
   const tbody = document.querySelector('#inventoryTable tbody');
   tbody.innerHTML = '';
   
-  items.forEach((item, index) => {
+  const sortedItems = sortItemsByName(items);
+
+  sortedItems.forEach((item, index) => {
     const row = document.createElement('tr');
     const itemCode = item.ItemCode || '';
     row.innerHTML = `
@@ -1759,7 +1761,9 @@ function displayInventoryForPurchase(items, previousState = new Map()) {
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  items.forEach((item, index) => {
+  const sortedItems = sortItemsByName(items);
+
+  sortedItems.forEach((item, index) => {
     const row = document.createElement('tr');
     const code = item.ItemCode || '';
     const itemKey = buildPurchaseItemKey(item);
@@ -1779,6 +1783,19 @@ function displayInventoryForPurchase(items, previousState = new Map()) {
     row.dataset.itemCode = code.toLowerCase();
     row.dataset.itemName = (item.ItemName || '').toLowerCase();
     tbody.appendChild(row);
+  });
+}
+
+function sortItemsByName(items) {
+  return [...(items || [])].sort((leftItem, rightItem) => {
+    const leftName = String(leftItem?.ItemName || '').trim();
+    const rightName = String(rightItem?.ItemName || '').trim();
+
+    if (!leftName && !rightName) return 0;
+    if (!leftName) return 1;
+    if (!rightName) return -1;
+
+    return leftName.localeCompare(rightName, undefined, { sensitivity: 'base' });
   });
 }
 
