@@ -524,10 +524,9 @@ async function loadReportDashboard(forceReload = false) {
 
     const itemsSoldTableEl = document.getElementById("reportItemsSoldTable");
     if (itemsSoldTableEl) {
-      const itemsSoldRows = itemsSold.slice(0, 10);
       itemsSoldTableEl.innerHTML = reportRenderTable({
         headers: ["Item", "Qty Sold", "Bills", "Estimated Value"],
-        rows: itemsSoldRows,
+        rows: itemsSold,
         rowRenderer: (row) => reportBuildUsageRows([row]).join(""),
         emptyMessage: "No sold items found."
       });
