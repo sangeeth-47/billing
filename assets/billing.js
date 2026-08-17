@@ -277,6 +277,7 @@ function setupSubmitButton() {
       // Build selectedInvoice from current form data
       const invoiceData = {
         InvoiceID: document.getElementById('billNo').value.trim(),
+        Date: document.getElementById('date').value.trim(),
         VehicleNo: document.getElementById('vehicleNo').value.trim(),
         MobileNo: document.getElementById('ownerNo').value.trim(),
         KmCovered: parseInt(document.getElementById('kmCovered').value) || 0,
