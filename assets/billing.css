@@ -1157,7 +1157,7 @@
     grid-template-columns: max-content 1fr;
     gap: 0.5rem 1rem;
     align-self: flex-start;
-    margin-top: 0 !important;
+    margin-top: 20px !important;
     margin-right: 0 !important; /* remove right spacing */
     padding-right: 0 !important; /* remove padding */
     max-width: 400px;
@@ -1377,6 +1377,13 @@
   src: url('fonts/TheRedlightFree.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
+}
+@font-face {
+    font-family: 'Rowdies';
+    src: url('fonts/Rowdies-Bold.woff2') format('woff2');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
 }
 .input-error {
   border: 2px solid red !important;
