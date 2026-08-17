@@ -920,10 +920,10 @@ function handleSuggestionSelect(input) {
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td></td>
-    <td><input type="text" list="itemSuggestions" style="width: 100%;" 
+    <td><input type="text" list="itemSuggestions" placeholder="Item" style="width: 100%;" 
     oninput="handleSuggestionSelect(this); calculateTotals(); this.classList.remove('input-error')" onchange="handleSuggestionSelect(this)"></td>
-    <td><input type="number" class="qty-input" min="1" max="999" value="1" oninput="validateQty(this);this.classList.remove('input-error');calculateTotals()"></td>
-    <td><input type="number" class="price-input" oninput="calculateTotals(); this.classList.remove('input-error')" onblur="formatDecimal(this)"></td>
+    <td><input type="number" class="qty-input" placeholder="Qty" min="1" max="999" value="1" oninput="validateQty(this);this.classList.remove('input-error');calculateTotals()"></td>
+    <td><input type="number" class="price-input" placeholder="Price" oninput="calculateTotals(); this.classList.remove('input-error')" onblur="formatDecimal(this)"></td>
     <td><input type="number" readonly></td>
     <td><button class="delete-btn" onclick="this.parentElement.parentElement.remove(); calculateTotals()">Delete</button></td>
   `;
@@ -962,9 +962,9 @@ function validateQty(input) {
   const tr = document.createElement("tr");
   tr.innerHTML = `
     <td></td>
-    <td><input type="text" style="width: 100%;" 
+    <td><input type="text" placeholder="Service Type" style="width: 100%;" 
   oninput="calculateTotals(); this.classList.remove('input-error')"></td>
-<td><input type="number" 
+<td><input type="number" placeholder="Service Amount"
   oninput="calculateTotals(); this.classList.remove('input-error')" 
   onblur="formatDecimal(this)"></td>
     <td><button class="delete-btn" onclick="this.parentElement.parentElement.remove(); calculateTotals()">Delete</button></td>
@@ -1249,7 +1249,7 @@ function showFullScreenQR() {
     ? amount.toString()
     : amount.toFixed(2);
 
-  const upiURL = `upi://pay?pa=9400109413@yescred&pn=BillingShop&am=${formattedAmount}&cu=INR`;
+  const upiURL = `upi://pay?pa=9744719133@ybl&pn=BillingShop&am=${formattedAmount}&cu=INR`;
 
   new QRCode(qrContainer, {
     text: upiURL,

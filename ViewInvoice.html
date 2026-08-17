@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workshop Billing System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Vast+Shadow&display=swap" rel="stylesheet">
+  <script src="assets/ViewInvoice.js"></script>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Noto Sans', "Helvetica", "Arial", sans-serif;
+  }
+
+  body {
+    background-color: #ffffff;
+    color: #3f3e3e;
+  }
+
+  header {
+    background-color: #3e3e3f;
+    color: white;
+    padding: 1rem 2rem;
+    text-align: center;
+    font-size: 1.5rem;
+  }
+
+  nav {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+  }
+
+  nav button {
+    background-color: #000000;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .section {
+    display: none;
+    padding: 2rem;
+  }
+
+  .active {
+    display: block;
+  }
+
+  .billing-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .billing-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 0px;
+  }
+    .final-section h2 {
+  margin-bottom: 1.5rem;
+  }
+  .billing-table td {
+    border: 1px solid #00000000;
+    padding: 4px;
+    text-align: left;
+  }
+
+  .billing-table input[type="number"],
+  .billing-table input[type="text"],
+  .billing-table input[readonly] { 
+    border: 2px solid rgb(0, 0, 0);
+    border-radius: 2px;
+    padding: 2px;
+    font-size: 12px;
+  }
+
+  .billing-table input:focus {
+  color: rgb(0, 0, 0);
+  background-color: #ffffff;
+  outline-color: rgb(0, 0, 0);
+  outline-width: 1px;
+  outline-style: solid;
+  box-shadow: 6px 6px 26px rgb(111, 116, 113);
+  transition: .2s;
+  transition-property: box-shadow;
+}
+
+.billing-table td input.qty-input,
+.billing-table td input.price-input,
+.billing-table td input[readonly] {
+  width: 100%;
+  box-sizing: border-box;
+  text-align: right;
+  padding: 2px;
+  margin: 0;
+  font-size: 12px;
+}
+
+#servicesTable td:nth-child(4) {
+  text-align: center;
+  vertical-align: middle;
+}
+
+#consumablesTable th.ct-col1 { width: 2%; text-align: center; }
+#consumablesTable th.ct-col2 { width: 77%; text-align: left; }
+#consumablesTable th.ct-col3 { width: 8%; text-align: center; }
+#consumablesTable th.ct-col4 { width: 19%; text-align: center; padding-right: 2px}
+#consumablesTable th.ct-col5 { width: 15%; text-align: center; padding-left: 10px}
+#consumablesTable th.ct-col6 { width: 6%; text-align: center; }
+
+#servicesTable th.st-col1 { width: 2%; text-align: center; }
+#servicesTable th.st-col2 { width: 80%; text-align: left; }
+#servicesTable th.st-col3 { width: 15%; text-align: left; padding-left: 14px}
+#servicesTable th.st-col4 { width: 6%; text-align: center; padding-left: 10px}
+
+.add-row-btn,
+.print-btn {
+  padding: 0.7rem 1.2rem;
+  border: none;
+  background-color: #000;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+.add-row-btn + .print-btn {
+  margin-top: 10px;
+}
+.add-row-btn:hover,
+.print-btn:hover {
+  outline: 2px solid rgb(45, 45, 46);         /* White outline */
+  outline-offset: 4px;              /* Gap between button and outline */
+}
+  .delete-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background: rgba(255, 0, 0, 0.8);
+  color: transparent;
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0.5px 0 0 rgb(255, 255, 255);
+  border: 1px solid rgb(255, 0, 0);
+  box-shadow:
+    0 0 5px rgb(255, 0, 0),
+    0 0 5px 1px transparent,
+    0 0 20px -5px rgb(255, 0, 0),
+    0 0 20px -5px rgb(247, 0, 0),
+    0 -10px 10px -10px transparent inset;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: 0.5s;
+}
+
+.delete-btn::before,
+.delete-btn::after {
+  content: "delete";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  font-size: 9px;
+  color: transparent;
+  pointer-events: none;
+}
+
+.delete-btn::after {
+  text-shadow: 1.8vw 1.8vw 1.2vw rgb(0, 0, 0);
+  letter-spacing: 5vw;
+  transition: 0.5s;
+}
+
+.delete-btn::before {
+  text-shadow: 1.8vw -2vw 1.2vw rgb(0, 0, 0);
+  letter-spacing: 5vw;
+  transition: 0.8s;
+}
+
+.delete-btn:hover::after,
+.delete-btn:focus::after,
+.delete-btn:hover::before,
+.delete-btn:focus::before {
+  letter-spacing: 0.28vw;
+  text-shadow: 0.08vw 0vw 0.08vw rgb(255, 255, 255);
+}
+
+.delete-btn:hover,
+.delete-btn:focus {
+  box-shadow:
+    0 0 2vw rgb(216, 11, 11),
+    0 0 1.2vw 0.1vw rgb(255, 0, 0),
+    4vw 0 2vw -0.5vw rgb(255, 0, 0),
+    -4vw 0 2vw -0.5vw rgb(255, 0, 105),
+    0 -10px 10px -10px rgb(255, 0, 105) inset;
+  transform: scale(1.1);
+  background: rgba(255, 18, 18, 0.534);
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgb(228, 32, 32);
+  border-bottom: 1px solid rgb(255, 0, 0);
+}
+
+
+  .signature {
+    margin-top: 3rem;
+    text-align: right;
+    font-style: italic;
+  }
+  .grand-total {
+    margin-bottom: 15px;
+  }
+  .totals,
+  .grand-total {
+    font-weight: bold;
+    margin-top: 1rem;
+    text-align: right;
+  }
+
+  .dashboard,
+  .inventory,
+  .reports {
+    background-color: #fff;
+    padding: 2rem;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+  }
+
+  .bill-info {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.5rem 1rem;
+    align-self: flex-start;
+    margin-top: 20px !important;
+    margin-right: 0 !important; /* remove right spacing */
+    padding-right: 0 !important; /* remove padding */
+    max-width: 400px;
+    flex: none !important;
+    text-align: left;
+    max-width: 35%;
+    padding-top: 10px;  
+  }
+
+  #shop-details {
+    flex: 1;
+    max-width: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding-top: 30px;
+    padding-right: 80px;
+    font-size: 12px;
+  }
+
+  .shop-title {
+    font-family: 'Rowdies', sans-serif;
+    font-size: 40px;
+    line-height: 1.1;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .shop-details {
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .bill-info label {
+    font-weight: bold;
+    text-align: left;
+  }
+
+  .bill-info input {
+    padding: 5px;
+    width: 100%;
+  }
+  .bill-info input:focus {
+  color: rgb(0, 0, 0);
+  background-color: #ffffff;
+  outline-color: rgb(0, 0, 0);
+  outline-width: 1px;
+  outline-style: solid;
+  box-shadow: 6px 6px 26px rgb(111, 116, 113);
+  transition: .1s;
+  transition-property: box-shadow;
+}
+  #billing {
+  position: relative;
+}
+
+.thank-you-footer {
+  display: none;
+}
+
+.close-btn {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  background: transparent;
+  border: none;
+  color: #444;
+  cursor: pointer;
+  z-index: 999;
+  transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+  color: red;
+}
+
+.invoicespinner {
+  width: 50px;
+  aspect-ratio: 1;
+  display: grid;
+  border: 4px solid #0000;
+  border-radius: 50%;
+  border-color: #ccc #0000;
+  animation: ilsp 0.5s infinite linear;
+}
+.invoicespinner::before,
+.invoicespinner::after {    
+  content: "";
+  grid-area: 1/1;
+  margin: 2px;
+  border: inherit;
+  border-radius: 50%;
+}
+.invoicespinner::before {
+  border-color: #f03355 #0000;
+  animation: inherit; 
+  animation-duration: 0.25s;
+  animation-direction: reverse;
+}
+.invoicespinner::after {
+  margin: 8px;
+}
+@keyframes ilsp { 
+  100%{transform: rotate(1turn)}
+}
+.invoiceloader {
+  width: 50px;
+  aspect-ratio: 1;
+  display: grid;
+  border: 4px solid #0000;
+  border-radius: 50%;
+  border-right-color: #25b09b;
+  animation: l15 1s infinite linear;
+}
+.invoiceloader::before,
+.invoiceloader::after {    
+  content: "";
+  grid-area: 1/1;
+  margin: 2px;
+  border: inherit;
+  border-radius: 50%;
+  animation: iloader15 2s infinite;
+}
+.invoiceloader::after {
+  margin: 8px;
+  animation-duration: 3s;
+}
+@keyframes iloader15{ 
+  100%{transform: rotate(1turn)}
+}
+#balloonMsg.error {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f44336;
+  color: white;
+  padding: 14px 24px;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 9999;
+}
+#balloonMsg.success {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4CAF50; /* ✅ Green for success */
+  color: white;
+  padding: 14px 24px;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 9999;
+}
+#qrOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+#qrOverlayContent {
+  background: white;
+  padding: 20px 10px;
+  border-radius: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+  box-shadow: 0 0 15px rgba(0,0,0,0.5);
+  text-align: center;
+  overflow: auto;
+}
+
+#qrOverlayContent p {
+  margin-top: 16px;
+  font-size: 14px;
+  color: #333;
+  word-break: break-word;
+}
+#qrOverlayContent canvas {
+  width: 300px;
+  height: 300px;
+  object-fit: contain;
+}
+
+/* Horizontal Lines When Printing*/
+#consumablesTable tbody tr,
+  #servicesTable tbody tr {
+    border-bottom: 1px solid rgb(77, 76, 76) !important;
+  }
+
+  #consumablesTable td,
+  #servicesTable td {
+    border: none !important; /* Optional: clean up inner cell borders */
+    padding: 4px !important;
+  }
+
+  #consumablesTable,
+  #servicesTable {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+
+#consumablesTable th,
+#servicesTable th {
+  border-bottom: 1px solid black !important;
+  padding-bottom: 4px !important;
+}
+.input-error {
+  border: 2px solid red !important;
+  background-color: #ffe6e6;
+}
+.ct-col4 {
+  padding-left: 40px;
+}
+.watermark-logo {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 400px;
+    height: 400px;
+    opacity: 0.05;
+    transform: translate(-50%, -50%);
+    background: url('https://raw.githubusercontent.com/sangeeth-47/billing/main/assets/logo.png') no-repeat center center;
+    background-size: contain;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+@font-face {
+  font-family: 'TheRedlightFree';
+  src: url('https://raw.githubusercontent.com/sangeeth-47/billing/main/fonts/TheRedlightFree.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+    font-family: 'Rowdies';
+    src: url('file:///DATA/billing/pdf-server/printpdf/fonts/Rowdies-Bold.woff2') format('woff2');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@media screen and (max-width: 768px) {
+  #shop-details, p, h2, .thank-you-footer, .signature, .company-logo {
+    display: none !important;
+  }
+  nav {
+    flex-direction: column;
+    align-items: center;
+  }
+  nav button {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+   .bill-info {
+    max-width: 90% !important;
+    flex: 1 1 90% !important;
+    padding: 0 !important;
+    margin-left: 5% !important;
+    margin-right: 5% !important;
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch !important;
+    text-align: left !important;
+  }
+  .bill-info .label-text {
+    font-size: 12px;
+    text-align: left;
+  }
+  /* Top Section Ended */
+  #consumablesTable td:first-child::before {
+  content: "";
+  display: inline-block;
+  background-image: url("assets/consumable.svg");
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+#servicesTable td:first-child::before {
+  content: "";
+  display: inline-block;
+  background-image: url("assets/service.svg");
+  background-size: 16px 16px;
+  background-repeat: no-repeat;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+  .billing-table thead {
+    display: none; /* hide the table headers */
+  }
+  .billing-table td:nth-child(1) {
+  justify-content: center;
+  text-align: center;
+}
+  .billing-table tbody,
+  .billing-table tr,
+  .billing-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .billing-table tr {
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+
+  .billing-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+  }
+
+  .billing-table input {
+    flex: 2;
+    width: auto;
+    text-align: right;
+  }
+
+  .print-btn {
+    margin-bottom: 0rem;
+  }
+
+  /* Bottom Section */
+    .upi-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    width: 100% !important;
+  }
+  .upi-section img {
+    max-width: 100px; /* optional: scale better on small screens */
+  }
+}
+@media print {
+
+  /* ===== LAYOUT FIX ===== */
+  #billing,
+  #shop-details,
+  .bill-info,
+  .company-logo {
+    display: block !important;
+  }
+
+  /* ===== HIDE UI ELEMENTS ===== */
+  header,
+  nav,
+  .add-row-btn,
+  .print-btn,
+  th:last-child,
+  td:last-child,
+  textarea,
+  .close-btn {
+    display: none !important;
+  }
+
+  /* ===== PAGE SETUP ===== */
+  @page {
+    size: A4;
+    margin: 7mm;
+    border: #000000 solid 1px;
+  }
+
+  body, html, #billing {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    font-size: 10px;
+  }
+
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white;
+  }
+/* HEADER stays at top */
+.billing-header {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.page {
+    width: 210mm;
+    height: 297mm;
+
+    padding: 6.35mm;
+    padding-top: 7mm; /* ✅ gap on every page */
+
+    box-sizing: border-box;
+
+    page-break-after: always;
+  }
+
+  /* remove gap only for FIRST page */
+  .page:first-child {
+    padding-top: 0;
+  }
+
+/* SECOND PAGE ONWARDS ONLY */
+.page + .page .print-content {
+  margin-top: 30mm !important;
+}
+  .page-break-gap {
+    height: 0;
+  }
+
+  /* Only applies AFTER a page break */
+  .page-break-gap {
+    break-before: auto;
+  }
+
+  .page-break-gap::before {
+    content: "";
+    display: block;
+    height: 15mm;
+  }
+
+  /* Remove gap on first occurrence */
+  .print-content > .page-break-gap:first-child::before {
+    height: 0;
+  }
+  /* ===== FOOTER CONTROL ===== */
+.print-footer {
+  page-break-inside: avoid !important;
+  margin-top: 30px;
+}
+.totals,
+.grand-total,
+.print-footer {
+  page-break-inside: avoid !important;
+}
+  .signature {
+    page-break-inside: avoid !important;
+  }
+
+  .totals-section {
+    page-break-inside: avoid !important;
+  }
+.final-section {
+  page-break-inside: avoid !important;
+}
+  /* ===== INPUT CLEANUP ===== */
+  input[type="text"],
+  input[type="number"] {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    padding: 2px !important;
+    box-sizing: border-box !important;
+    font-size: 10px !important;
+  }
+
+  /* ===== HEADER SECTION ===== */
+  .company-logo {
+    display: flex !important;
+    justify-content: center !important;
+    padding: 1px 0 0 0 !important;
+    margin-right: 40px !important;
+  }
+
+  .company-logo img {
+    display: block;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 70% !important;
+  }
+
+  #shop-details {
+    /* font-family: Noto Sans, "Helvetica", "Arial", sans-serif !important; */
+    display: flex !important;
+    flex-direction: column !important;
+    text-align: center !important;
+    max-width: 40% !important;
+    padding: 10px !important;
+  }
+
+  .bill-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .info-row {
+    display: flex;
+    align-items: center;
+    font-size: 10px;
+    width: 70% !important;
+    margin-left: 60px !important;
+    white-space: nowrap !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .info-row input {
+    width: 40px !important;
+    max-width: 40px !important;
+    min-width: 40px !important;
+    flex: none !important;
+  }
+
+  .label-text {
+    width: 80px !important;
+    font-weight: bold !important;
+  }
+
+  .colon {
+    font-weight: bold;
+  }
+
+  .bill-info input,
+  #dateText {
+    font-size: 10px;
+    border: none;
+    background: transparent;
+    outline: none;
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 100px !important;
+    display: inline-block !important;
+  }
+
+  #dateText {
+    width: 56% !important;
+    text-align: left !important;
+  }
+
+  /* ===== TABLE FIX ===== */
+  #consumablesTable,
+  #servicesTable {
+    border-collapse: collapse !important;
+    border-spacing: 0 !important;
+    font-size: 10px;
+  }
+  #consumablesTable td,
+  #servicesTable td {
+    border: 0.5px solid #000000 !important;
+    padding: 4px !important;
+  }
+  .billing-table th,
+  .billing-table td {
+  border: 1.5px solid black !important;
+}
+/* Header cells - black background + white text */
+#consumablesTable th,
+#servicesTable th {
+  padding: 8px 6px !important;
+  background-color: #000000 !important; 
+  color: #fff !important;             /* white text */
+}
+  #consumablesTable th.ct-col1 { width: 5%; text-align: center !important; }
+  #consumablesTable th.ct-col2 { width: 77%; text-align: left; padding-left : 5px !important; }
+  #servicesTable th.st-col1 { width: 3.5%; text-align: center !important; }
+  #servicesTable th.st-col2 { width: 80%; text-align: left; padding-left : 5px !important; }
+
+  #consumablesTable th:last-child,
+  #consumablesTable td:last-child,
+  #servicesTable th:last-child,
+  #servicesTable td:last-child {
+    display: none !important;
+  }
+
+  #servicesTable td:nth-child(3) input {
+    text-align: right !important;
+  }
+  .billing-table td {
+    text-align: center !important;
+  }
+  /* Prevent row break */
+  #consumablesTable tr,
+  #servicesTable tr {
+    page-break-inside: avoid !important;
+  }
+
+  /* Repeat header */
+  #consumablesTable thead,
+  #servicesTable thead {
+    display: table-header-group;
+  }
+
+  /* ===== PRINT TEXT FIX ===== */
+  .billing-table td input[type="number"]::after,
+  .billing-table td input[readonly]::after {
+    content: attr(data-print);
+    visibility: visible !important;
+    font-size: 10px;
+    color: black;
+    display: inline-block;
+    text-align: right !important;
+  }
+
+  #servicesTable input[type="text"] {
+    visibility: visible !important;
+    position: relative !important;
+  }
+
+  #servicesTable .print-text {
+    visibility: visible !important;
+    display: inline !important;
+    color: black !important;
+    font-size: 10px !important;
+    text-align: right !important;
+  }
+/* Add ₹ before values in print */
+#consumablesTable td:nth-child(4),
+#consumablesTable td:nth-child(5),
+#servicesTable td:nth-child(3) {
+  padding-right: 8px !important;
+  text-align: right;
+  white-space: nowrap;
+}
+
+#consumablesTable td:nth-child(4)::after,
+#consumablesTable td:nth-child(5)::after,
+#servicesTable td:nth-child(3)::after {
+  content: "₹";
+  display: inline;
+  margin-left: -10px;
+  position: static !important;
+}
+}
+</style>
+</head>
+
+<body>
+  <header>Workshop Billing System</header>
+  <div class="watermark-logo"></div>
+  <div class="page">
+  <section id="billing" class="section active">
+    <button id="closeBillingBtn" class="close-btn" onclick="goBackToSearch()">×</button>
+
+    <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: flex-start;">
+      
+      <div class="company-logo" style="
+        flex: 1;  
+        display: flex; 
+        align-items: flex-start; 
+        justify-content: flex-start; 
+        padding-right: 0px;
+        padding-left: 70px; 
+        padding-top: 0px;">
+        <img src="file:///DATA/billing/pdf-server/printpdf/logo.png" alt="Company Logo" style="max-width: 70%; height: auto;">
+      </div>
+
+      <div id="shop-details">
+        <h2 class="shop-title">REBORN MOTORCYCLES</h2>
+        <br>
+        <p class="shop-details">
+          Near Pickon Super Market, Chelora<br>
+          Kannur, Mattannur Rd, Mathukkoth<br>
+          PIN: 670594, MOB: 9744719133 <br> Email : Kkirantm@gmail.com
+        </p>
+      </div>
+
+      <div class="bill-info">
+        <div class="info-row"><span class="label-text">Bill No</span><span class="colon">:</span><input type="text" id="billNo"></div>
+        <div class="info-row"><span class="label-text">Date</span><span class="colon">:</span><input type="text" id="date" readonly></div>
+        <div class="info-row"><span class="label-text">Vehicle No</span><span class="colon">:</span><input type="text" id="vehicleNo"></div>
+        <div class="info-row"><span class="label-text">Mobile No</span><span class="colon">:</span><input type="text" id="ownerNo"></div>
+        <div class="info-row"><span class="label-text">KM Covered</span><span class="colon">:</span><input type="number" id="kmCovered"></div>
+      </div>
+
+    </div>
+ <div class="print-content">
+    <div class="billing-container">
+ <div class="page-break-gap"></div>
+      <h2>Items</h2>
+      <table class="billing-table" id="consumablesTable">
+        <thead>
+          <tr>
+            <th class="ct-col1">#</th>
+            <th class="ct-col2">Item</th>
+            <th class="ct-col3">Qty</th>
+            <th class="ct-col4">Price</th>
+            <th class="ct-col5">Total</th>
+            <th class="ct-col6">Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="totals">Subtotal: ₹ <span id="consumableSubtotal">0.00</span></div>
+      <button class="add-row-btn" onclick="addRow('consumablesTable')">+ Add Consumable</button>
+      <div class="final-section">
+      <h2>Services</h2>
+      <table class="billing-table" id="servicesTable">
+        <thead>
+          <tr>
+            <th class="st-col1">#</th>
+            <th class="st-col2">Service</th>
+            <th class="st-col3">Service Charge</th>
+            <th class="st-col4">Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="totals">Subtotal: ₹ <span id="serviceSubtotal">0.00</span></div>
+      <div class="grand-total">Grand Total: ₹ <span id="grandTotal">0.00</span></div>
+
+      <button class="add-row-btn" onclick="addServiceRow('servicesTable')">+ Add Service</button>
+      <button class="print-btn" onclick="prepareAndPrint()">Print PDF</button>
+
+      <div id="balloonMsg"></div>
+
+      <!-- UPI + QR + SIGNATURE + THANK YOU (FOOTER) -->
+<div class="print-footer" style="margin-top: 3rem;">
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-end;">
+
+    <!-- LEFT: UPI -->
+    <div class="upi-section" style="text-align: center;">
+      <strong>Pay Here</strong><br>
+      <div id="qrWrapper" style="width: 80px; height: 80px; margin: auto; cursor: pointer;">
+        <img id="staticQR" src="https://raw.githubusercontent.com/sangeeth-47/billing/main/assets/myqr.jpg" alt="UPI QR Code"
+          style="width: 100%; height: 100%; object-fit: contain;">
+      </div>
+      <small>UPI ID: 9744719133@ybl</small>
+    </div>
+
+    <!-- RIGHT: SIGNATURE -->
+    <div class="signature" style="text-align: right;">
+      Sign: ___________________________
+    </div>
+
+  </div>
+
+  <!-- THANK YOU -->
+  <footer class="thank-you-footer" style="text-align: center; margin-top: 20px;">
+    <p style="font-family: 'TheRedlightFree', sans-serif; font-size: 25px">
+      Thanks for doing business with us
+    </p>
+  </footer>
+
+</div>
+
+<!-- KEEP OVERLAY SEPARATE (unchanged) -->
+<div id="qrOverlay" style="display: none;">
+  <div id="qrOverlayContent">
+    <div id="qrFullScreen"></div>
+    <p style="text-align: center; margin-top: 10px;">Tap anywhere to close</p>
+  </div>
+</div>
+</div>
+      <datalist id="itemSuggestions"></datalist>
+
+    </div>
+    </div>
+  </section>
+</div>
+  <!-- overlays unchanged -->
+  <div id="SubmitInvoiceOverlay" style="
+    display: none;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+    font-family: Arial, sans-serif;">
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <div class="invoicespinner"></div>
+      <div style="margin-top: 12px;">Editing invoice, please wait...</div>
+    </div>
+  </div>
+
+  <div id="invoiceLoadingOverlay" style="
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(255, 255, 255, 0.603);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;">
+    <div class="invoiceloader"></div>
+  </div>
+
+</body>
+</html>
